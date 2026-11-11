@@ -43,14 +43,27 @@ export default function App() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isSupabaseModalOpen, setIsSupabaseModalOpen] = useState(false);
 
-  // Initialize admin session check
+  // Initialize admin session check & keyboard shortcut Ctrl+Shift+A
   useEffect(() => {
     const session = getAdminSession();
     if (session.isAuthenticated) {
       setIsAdminLoggedIn(true);
       setAdminEmail(session.userEmail);
     }
-  }, []);
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'a') {
+        e.preventDefault();
+        if (isAdminLoggedIn) {
+          setActivePage('admin');
+        } else {
+          setIsLoginModalOpen(true);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isAdminLoggedIn]);
 
   // Supabase live database sync on startup
   useEffect(() => {

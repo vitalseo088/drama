@@ -44,13 +44,6 @@ export const Footer: React.FC<FooterProps> = ({
               {cat}
             </button>
           ))}
-          <button
-            onClick={onNavigateAdmin}
-            className="hover:text-slate-900 text-slate-700 font-semibold flex items-center gap-1 cursor-pointer"
-          >
-            <ShieldCheck className="w-3.5 h-3.5 text-orange-600" />
-            <span>Admin Center</span>
-          </button>
         </div>
       </div>
 

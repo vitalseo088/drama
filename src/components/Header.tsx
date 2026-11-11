@@ -85,7 +85,7 @@ export const Header: React.FC<HeaderProps> = ({
             })}
         </nav>
 
-        {/* Zone 3: Search & Admin Action */}
+        {/* Zone 3: Search & Secret Admin Trigger */}
         <div className="flex items-center gap-2.5 shrink-0">
           {/* Quick Search Toggle */}
           <button
@@ -95,21 +95,6 @@ export const Header: React.FC<HeaderProps> = ({
             aria-label="Toggle search"
           >
             {showSearch ? <X className="w-4 h-4" /> : <Search className="w-4 h-4" />}
-          </button>
-
-          {/* Admin Panel button */}
-          <button
-            onClick={onNavigateAdmin}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
-              activePage === 'admin'
-                ? 'bg-orange-600 text-white shadow-sm'
-                : isAdminLoggedIn
-                ? 'bg-slate-900 text-white hover:bg-slate-800'
-                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-            }`}
-          >
-            <ShieldCheck className="w-3.5 h-3.5" />
-            <span>{isAdminLoggedIn ? 'Admin Panel' : 'Admin Login'}</span>
           </button>
         </div>
       </div>

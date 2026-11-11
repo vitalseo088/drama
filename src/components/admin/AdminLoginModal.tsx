@@ -71,11 +71,6 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
     }
   };
 
-  const handleDemoLogin = () => {
-    onSuccess('admin@streampost.local', false);
-    onClose();
-  };
-
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
       <div className="bg-white rounded-2xl max-w-md w-full border border-slate-200 shadow-2xl overflow-hidden">
@@ -137,29 +132,6 @@ export const AdminLoginModal: React.FC<AdminLoginModalProps> = ({
               <span>{successMsg}</span>
             </div>
           )}
-
-          {/* 1-Click Instant Evaluation Demo Admin Button */}
-          <div className="mb-5 p-4 bg-orange-50/70 border border-orange-200 rounded-xl text-center">
-            <p className="text-xs text-slate-700 font-medium mb-2.5">
-              Instant evaluation mode available without requiring credentials:
-            </p>
-            <button
-              onClick={handleDemoLogin}
-              className="w-full py-2.5 px-4 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-xs rounded-lg shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <ShieldCheck className="w-4 h-4" />
-              <span>1-Click Instant Admin Login</span>
-            </button>
-          </div>
-
-          <div className="relative my-4 text-center">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-slate-200"></div>
-            </div>
-            <span className="relative px-3 bg-white text-[11px] text-slate-400 font-medium uppercase tracking-wider">
-              Or Sign In with Supabase Auth
-            </span>
-          </div>
 
           {/* Supabase Email/Password Form */}
           <form onSubmit={handleSupabaseAuth} className="space-y-3.5">
