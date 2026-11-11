@@ -94,6 +94,28 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [isSyncingSupabase, setIsSyncingSupabase] = useState(false);
   const [supabaseSyncMsg, setSupabaseSyncMsg] = useState<string | null>(null);
 
+  // Sync settings when props update (e.g. on Supabase fetch)
+  React.useEffect(() => {
+    setAdsterraUrl(settings.adsterraSmartlinkUrl || '');
+    setAdsterraEnabled(settings.adsterraEnabled ?? true);
+    setAdsterraHeight(settings.adsterraHeight || 340);
+    setAdsterraAspectRatio(settings.adsterraAspectRatio || '1:1');
+    setAdsterraNotice(settings.adsterraNoticeText || '');
+
+    setDownloadText(settings.downloadButtonText || 'DOWNLOAD VIDEO NOW');
+    setDownloadSubtext(settings.downloadButtonSubtext || '');
+    setDownloadCountdown(settings.downloadCountdownSeconds ?? 3);
+    setGlobalDownloadUrl(settings.globalDownloadUrl || '');
+    setGlobalDownloadUrlOverride(settings.globalDownloadUrlOverride || false);
+
+    setSiteTitle(settings.siteTitle || 'StreamPost');
+    setSiteTagline(settings.siteTagline || '');
+    setLogoText(settings.logoText || 'StreamPost');
+    setFooterText(settings.footerText || '');
+    setNavLinks(settings.topNavLinks || []);
+    setCategoriesList(settings.categories || []);
+  }, [settings]);
+
   const showSuccess = (msg: string) => {
     setSavedSuccessMsg(msg);
     setTimeout(() => setSavedSuccessMsg(null), 3500);

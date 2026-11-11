@@ -82,6 +82,11 @@ export const SinglePostView: React.FC<SinglePostViewProps> = ({
 
   const handleStartDownload = () => {
     const delay = settings.downloadCountdownSeconds ?? 3;
+    if (downloadState === 'ready' || downloadState === 'downloading') {
+      executeDownload();
+      return;
+    }
+
     if (delay > 0 && downloadState === 'idle') {
       setDownloadState('countdown');
       setCountdown(delay);
@@ -94,30 +99,36 @@ export const SinglePostView: React.FC<SinglePostViewProps> = ({
     setDownloadState('downloading');
     
     // Determine target URL based on global settings & post overrides
-    let targetUrl = post.downloadUrl;
-    if (settings.globalDownloadUrlOverride && settings.globalDownloadUrl && settings.globalDownloadUrl.trim() !== '') {
-      targetUrl = settings.globalDownloadUrl;
-    } else if (!targetUrl || targetUrl.trim() === '') {
-      targetUrl = (settings.globalDownloadUrl && settings.globalDownloadUrl.trim() !== '') 
-        ? settings.globalDownloadUrl 
-        : post.videoUrl;
+    const hasGlobalUrl = Boolean(settings.globalDownloadUrl && settings.globalDownloadUrl.trim() !== '');
+    let targetUrl = '';
+
+    if (settings.globalDownloadUrlOverride && hasGlobalUrl) {
+      // Admin forced global URL for all posts
+      targetUrl = settings.globalDownloadUrl!.trim();
+    } else if (post.downloadUrl && post.downloadUrl.trim() !== '' && post.downloadUrl !== post.videoUrl) {
+      // Post has a specific custom download link
+      targetUrl = post.downloadUrl.trim();
+    } else if (hasGlobalUrl) {
+      // Use global download URL fallback
+      targetUrl = settings.globalDownloadUrl!.trim();
+    } else {
+      // Final fallback to post downloadUrl or videoUrl
+      targetUrl = post.downloadUrl || post.videoUrl;
     }
     
-    // Trigger download / open link
+    // Ensure absolute protocol
+    if (targetUrl && !targetUrl.startsWith('http://') && !targetUrl.startsWith('https://') && !targetUrl.startsWith('/')) {
+      targetUrl = `https://${targetUrl}`;
+    }
+
+    // Trigger download / open link in new window synchronously to avoid popup blocker
     if (targetUrl) {
-      const a = document.createElement('a');
-      a.href = targetUrl;
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
-      a.download = `${post.slug}_${selectedQuality.replace(/\s+/g, '_')}.mp4`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
+      window.open(targetUrl, '_blank', 'noopener,noreferrer');
     }
 
     setTimeout(() => {
       setDownloadState('ready');
-    }, 1500);
+    }, 1200);
   };
 
   // Determine which Adsterra smartlink to show: post override or site default
