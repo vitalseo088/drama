@@ -29,6 +29,17 @@ import {
   incrementPostViewsInSupabase,
 } from './lib/supabaseDb';
 
+// Helper to format string into URL-friendly slug
+const slugify = (text: string) => {
+  if (!text) return '';
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/[\s_-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+};
+
 export default function App() {
   const [posts, setPosts] = useState<VideoPost[]>(getStoredPosts);
   const [settings, setSettings] = useState<SiteSettings>(getStoredSettings);
@@ -44,7 +55,26 @@ export default function App() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isSupabaseModalOpen, setIsSupabaseModalOpen] = useState(false);
 
-  // Handle admin route checks & keyboard shortcut Ctrl+Shift+A
+  // 1. Purge all ad scripts and third-party ad elements when in Admin view
+  useEffect(() => {
+    if (activePage === 'admin') {
+      const adSelectors = [
+        'script[src*="aarems.org"]',
+        'script[src*="bancadeltempoidea.org"]',
+        'script[src*="adsterra"]',
+        'script[src*="syndication"]',
+        'iframe[src*="aarems.org"]',
+        'iframe[src*="bancadeltempoidea.org"]',
+        '.adsterra-smartlink',
+        '.ad-container',
+      ];
+      adSelectors.forEach((selector) => {
+        document.querySelectorAll(selector).forEach((el) => el.remove());
+      });
+    }
+  }, [activePage]);
+
+  // 2. Handle URL route parsing (hashchange & popstate) for deep linking (#/post/:slug, #/category/:cat, #/admin)
   useEffect(() => {
     const session = getAdminSession();
     if (session.isAuthenticated) {
@@ -53,26 +83,75 @@ export default function App() {
     }
 
     const checkRoute = () => {
-      if (window.location.hash === '#admin' || window.location.pathname === '/admin') {
+      const hash = window.location.hash || '';
+      const path = window.location.pathname || '';
+
+      if (hash === '#admin' || hash === '#/admin' || path === '/admin') {
         setActivePage('admin');
+        return;
+      }
+
+      if (hash.startsWith('#/post/') || hash.startsWith('#post/')) {
+        const rawSlug = hash.replace(/^#(?:|\/)post\//, '').trim();
+        if (rawSlug) {
+          const found = posts.find(
+            (p) => p.slug === rawSlug || slugify(p.title) === rawSlug || p.id === rawSlug
+          );
+          if (found) {
+            setSelectedPost(found);
+            setActivePage('post');
+            return;
+          }
+        }
+      }
+
+      if (hash.startsWith('#/category/') || hash.startsWith('#category/')) {
+        const catParam = decodeURIComponent(hash.replace(/^#(?:|\/)category\//, '').trim());
+        if (catParam) {
+          const matchedCategory =
+            settings.categories.find(
+              (c) => c.toLowerCase() === catParam.toLowerCase() || slugify(c) === catParam.toLowerCase()
+            ) || catParam;
+          setSelectedCategory(matchedCategory);
+          setSelectedPost(null);
+          setActivePage('home');
+          return;
+        }
+      }
+
+      if (hash === '#/trending' || hash === '#trending') {
+        setSelectedCategory(null);
+        setSortBy('views');
+        setSelectedPost(null);
+        setActivePage('home');
+        return;
+      }
+
+      if (hash === '' || hash === '#' || hash === '#/') {
+        setSelectedPost(null);
+        setActivePage('home');
       }
     };
+
     checkRoute();
     window.addEventListener('hashchange', checkRoute);
+    window.addEventListener('popstate', checkRoute);
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'a') {
         e.preventDefault();
-        window.location.hash = 'admin';
+        window.location.hash = '#/admin';
         setActivePage('admin');
       }
     };
     window.addEventListener('keydown', handleKeyDown);
+
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('hashchange', checkRoute);
+      window.removeEventListener('popstate', checkRoute);
     };
-  }, [isAdminLoggedIn]);
+  }, [posts, settings.categories]);
 
   // Supabase live database sync on startup
   useEffect(() => {
@@ -111,7 +190,7 @@ export default function App() {
 
   // Navigation handlers
   const handleNavigateHome = () => {
-    window.location.hash = '';
+    window.location.hash = '#/';
     setSelectedCategory(null);
     setSelectedPost(null);
     setSearchQuery('');
@@ -120,11 +199,12 @@ export default function App() {
   };
 
   const handleNavigateCategory = (cat: string) => {
-    window.location.hash = '';
     if (cat === 'Trending') {
+      window.location.hash = '#/trending';
       setSelectedCategory(null);
       setSortBy('views');
     } else {
+      window.location.hash = `#/category/${slugify(cat) || encodeURIComponent(cat.toLowerCase())}`;
       setSelectedCategory(cat);
     }
     setSelectedPost(null);
@@ -137,16 +217,20 @@ export default function App() {
       p.id === post.id ? { ...p, views: p.views + 1 } : p
     );
     handleUpdatePosts(updated);
+
+    const postSlug = post.slug || slugify(post.title) || post.id;
+    window.location.hash = `#/post/${postSlug}`;
     setSelectedPost({ ...post, views: post.views + 1 });
     setActivePage('post');
 
     if (settings.supabaseConfig?.url && settings.supabaseConfig?.anonKey) {
       incrementPostViewsInSupabase(post.id, post.views, settings.supabaseConfig);
     }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleOpenAdmin = () => {
-    window.location.hash = 'admin';
+    window.location.hash = '#/admin';
     setActivePage('admin');
   };
 
@@ -154,6 +238,7 @@ export default function App() {
     setIsAdminLoggedIn(true);
     setAdminEmail(email);
     setAdminSession({ isAuthenticated: true, userEmail: email, role: 'admin' });
+    window.location.hash = '#/admin';
     setActivePage('admin');
   };
 
@@ -161,7 +246,7 @@ export default function App() {
     setIsAdminLoggedIn(false);
     setAdminEmail(undefined);
     clearAdminSession();
-    window.location.hash = '';
+    window.location.hash = '#/';
     setActivePage('home');
   };
 
