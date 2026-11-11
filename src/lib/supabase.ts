@@ -4,10 +4,13 @@ import { SupabaseConfig } from '../types';
 let supabaseClient: SupabaseClient | null = null;
 
 export function getSupabaseClient(config?: SupabaseConfig): SupabaseClient | null {
-  const url = config?.url || (import.meta as any).env?.VITE_SUPABASE_URL;
-  const anonKey = config?.anonKey || (import.meta as any).env?.VITE_SUPABASE_ANON_KEY;
+  const rawUrl = config?.url || (import.meta as any).env?.VITE_SUPABASE_URL || '';
+  const rawKey = config?.anonKey || (import.meta as any).env?.VITE_SUPABASE_ANON_KEY || '';
 
-  if (!url || !anonKey || url.trim() === '' || anonKey.trim() === '') {
+  const url = rawUrl && !rawUrl.includes('your-project-id') ? rawUrl.trim() : '';
+  const anonKey = rawKey && !rawKey.includes('your-anon') ? rawKey.trim() : '';
+
+  if (!url || !anonKey || url === '' || anonKey === '') {
     return null;
   }
 
@@ -29,9 +32,15 @@ export function getSupabaseClient(config?: SupabaseConfig): SupabaseClient | nul
 
 export function resetSupabaseClient(config: SupabaseConfig): SupabaseClient | null {
   supabaseClient = null;
-  if (!config.url || !config.anonKey) return null;
+  const rawUrl = config.url || '';
+  const rawKey = config.anonKey || '';
+  const url = rawUrl && !rawUrl.includes('your-project-id') ? rawUrl.trim() : '';
+  const anonKey = rawKey && !rawKey.includes('your-anon') ? rawKey.trim() : '';
+
+  if (!url || !anonKey) return null;
+
   try {
-    supabaseClient = createClient(config.url, config.anonKey, {
+    supabaseClient = createClient(url, anonKey, {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
@@ -89,12 +98,12 @@ export async function uploadMediaToSupabase(
  * Test Supabase connection
  */
 export async function testSupabaseConnection(url: string, anonKey: string): Promise<{ success: boolean; message: string }> {
-  if (!url || !anonKey) {
-    return { success: false, message: 'Please provide both Supabase URL and Anon Key' };
+  if (!url || !anonKey || url.includes('your-project-id')) {
+    return { success: false, message: 'Please provide a valid Supabase Project URL and Anon Key' };
   }
 
   try {
-    const testClient = createClient(url, anonKey);
+    const testClient = createClient(url.trim(), anonKey.trim());
     const { error } = await testClient.auth.getSession();
     if (error && !error.message.includes('fetch')) {
       return { success: false, message: `Auth check: ${error.message}` };
