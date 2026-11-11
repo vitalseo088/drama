@@ -1,0 +1,6 @@
+{
+  "name": "StreamPost - Video Blog & Media Hub",
+  "description": "Clean single-column boxed video blog platform with integrated Adsterra smartlink ad iframe, embedded video player, high-impact orange gradient download actions, and comprehensive admin panel.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
