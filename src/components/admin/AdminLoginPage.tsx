@@ -25,7 +25,8 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [isSupabaseModalOpen, setIsSupabaseModalOpen] = useState(false);
 
-  const hasSupabase = Boolean(supabaseConfig.url && supabaseConfig.anonKey);
+  const envUrl = (import.meta as any).env?.VITE_SUPABASE_URL || '';
+  const hasSupabase = Boolean((supabaseConfig.url && supabaseConfig.url !== 'https://your-project-id.supabase.co') || (envUrl && envUrl !== 'https://your-project-id.supabase.co'));
 
   const handleSupabaseAuth = async (e: React.FormEvent) => {
     e.preventDefault();

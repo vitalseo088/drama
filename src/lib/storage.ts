@@ -41,12 +41,33 @@ export function savePosts(posts: VideoPost[]): void {
 export function getStoredSettings(): SiteSettings {
   try {
     const raw = localStorage.getItem(STORAGE_SETTINGS_KEY);
+    const envUrl = (import.meta as any).env?.VITE_SUPABASE_URL || '';
+    const envKey = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY || '';
+
     if (!raw) {
-      localStorage.setItem(STORAGE_SETTINGS_KEY, JSON.stringify(INITIAL_SETTINGS));
-      return INITIAL_SETTINGS;
+      const initial = { ...INITIAL_SETTINGS };
+      if (envUrl && envKey && envUrl !== 'https://your-project-id.supabase.co') {
+        initial.supabaseConfig = {
+          url: envUrl,
+          anonKey: envKey,
+          storageBucket: 'videos',
+          connected: true,
+        };
+      }
+      localStorage.setItem(STORAGE_SETTINGS_KEY, JSON.stringify(initial));
+      return initial;
     }
     const parsed = JSON.parse(raw);
-    return { ...INITIAL_SETTINGS, ...parsed };
+    const merged = { ...INITIAL_SETTINGS, ...parsed };
+    if ((!merged.supabaseConfig?.url || merged.supabaseConfig.url === 'https://your-project-id.supabase.co') && envUrl && envUrl !== 'https://your-project-id.supabase.co') {
+      merged.supabaseConfig = {
+        url: envUrl,
+        anonKey: envKey,
+        storageBucket: merged.supabaseConfig?.storageBucket || 'videos',
+        connected: true,
+      };
+    }
+    return merged;
   } catch (e) {
     console.error('Failed to parse settings from localStorage', e);
     return INITIAL_SETTINGS;
