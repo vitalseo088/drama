@@ -17,6 +17,7 @@ import { Header } from './components/Header';
 import { PostCard } from './components/PostCard';
 import { SinglePostView } from './components/SinglePostView';
 import { AdminPanel } from './components/admin/AdminPanel';
+import { AdminLoginPage } from './components/admin/AdminLoginPage';
 import { AdminLoginModal } from './components/admin/AdminLoginModal';
 import { SupabaseSettingsModal } from './components/admin/SupabaseSettingsModal';
 import { Footer } from './components/Footer';
@@ -43,7 +44,7 @@ export default function App() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isSupabaseModalOpen, setIsSupabaseModalOpen] = useState(false);
 
-  // Initialize admin session check & keyboard shortcut Ctrl+Shift+A
+  // Handle admin route checks & keyboard shortcut Ctrl+Shift+A
   useEffect(() => {
     const session = getAdminSession();
     if (session.isAuthenticated) {
@@ -51,18 +52,26 @@ export default function App() {
       setAdminEmail(session.userEmail);
     }
 
+    const checkRoute = () => {
+      if (window.location.hash === '#admin' || window.location.pathname === '/admin') {
+        setActivePage('admin');
+      }
+    };
+    checkRoute();
+    window.addEventListener('hashchange', checkRoute);
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 'a') {
         e.preventDefault();
-        if (isAdminLoggedIn) {
-          setActivePage('admin');
-        } else {
-          setIsLoginModalOpen(true);
-        }
+        window.location.hash = 'admin';
+        setActivePage('admin');
       }
     };
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('hashchange', checkRoute);
+    };
   }, [isAdminLoggedIn]);
 
   // Supabase live database sync on startup
@@ -74,7 +83,6 @@ export default function App() {
           setPosts(data);
           savePosts(data);
         } else if (!error && data && data.length === 0) {
-          // Table exists but is empty -> auto seed initial posts
           seedInitialDataToSupabase(posts, settings, config);
         }
       });
@@ -105,6 +113,7 @@ export default function App() {
 
   // Navigation handlers
   const handleNavigateHome = () => {
+    window.location.hash = '';
     setSelectedCategory(null);
     setSelectedPost(null);
     setSearchQuery('');
@@ -113,6 +122,7 @@ export default function App() {
   };
 
   const handleNavigateCategory = (cat: string) => {
+    window.location.hash = '';
     if (cat === 'Trending') {
       setSelectedCategory(null);
       setSortBy('views');
@@ -125,7 +135,6 @@ export default function App() {
   };
 
   const handleSelectPost = (post: VideoPost) => {
-    // Increment view count
     const updated = posts.map((p) =>
       p.id === post.id ? { ...p, views: p.views + 1 } : p
     );
@@ -139,11 +148,8 @@ export default function App() {
   };
 
   const handleOpenAdmin = () => {
-    if (isAdminLoggedIn) {
-      setActivePage('admin');
-    } else {
-      setIsLoginModalOpen(true);
-    }
+    window.location.hash = 'admin';
+    setActivePage('admin');
   };
 
   const handleAdminLoginSuccess = (email: string, _isSupabase: boolean) => {
@@ -157,6 +163,7 @@ export default function App() {
     setIsAdminLoggedIn(false);
     setAdminEmail(undefined);
     clearAdminSession();
+    window.location.hash = '';
     setActivePage('home');
   };
 
@@ -179,20 +186,48 @@ export default function App() {
   if (sortBy === 'views' || sortBy === 'trending') {
     displayedPosts = [...displayedPosts].sort((a, b) => b.views - a.views);
   } else {
-    // Latest
     displayedPosts = [...displayedPosts].sort(
       (a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
     );
   }
 
+  // SEPARATE ADMIN VIEW (When visiting /admin or #admin)
+  if (activePage === 'admin') {
+    if (!isAdminLoggedIn) {
+      return (
+        <AdminLoginPage
+          onSuccess={handleAdminLoginSuccess}
+          supabaseConfig={settings.supabaseConfig}
+          onUpdateSupabaseConfig={(newCfg) => {
+            handleUpdateSettings({ ...settings, supabaseConfig: newCfg });
+          }}
+          onBackToSite={handleNavigateHome}
+        />
+      );
+    }
+
+    return (
+      <AdminPanel
+        posts={posts}
+        settings={settings}
+        onUpdatePosts={handleUpdatePosts}
+        onUpdateSettings={handleUpdateSettings}
+        onViewPost={(post) => {
+          setSelectedPost(post);
+          setActivePage('post');
+          window.location.hash = '';
+        }}
+        onBackToSite={handleNavigateHome}
+        onLogout={handleAdminLogout}
+        adminEmail={adminEmail}
+      />
+    );
+  }
+
+  // FRONT WEBSITE VIEW (Boxed 960px single column layout)
   return (
     <div className="min-h-screen bg-[#f3f4f6] flex flex-col items-center">
-      {/* 
-        MANDATORY REQUIREMENT:
-        "simple layout website single column boxed 960px max width white background no dark mode top menu admin can manage"
-      */}
       <div className="w-full max-w-[960px] bg-white min-h-screen border-x border-slate-200/80 shadow-xs flex flex-col">
-        {/* Top Header Menu managed by Admin */}
         <Header
           settings={settings}
           activePage={activePage}
@@ -205,24 +240,8 @@ export default function App() {
           onSearchChange={setSearchQuery}
         />
 
-        {/* MAIN BODY AREA */}
         <main className="flex-1 w-full">
-          {/* VIEW 1: ADMIN PANEL */}
-          {activePage === 'admin' && (
-            <AdminPanel
-              posts={posts}
-              settings={settings}
-              onUpdatePosts={handleUpdatePosts}
-              onUpdateSettings={handleUpdateSettings}
-              onViewPost={handleSelectPost}
-              onBackToSite={handleNavigateHome}
-              onLogout={handleAdminLogout}
-              adminEmail={adminEmail}
-            />
-          )}
-
-          {/* VIEW 2: SINGLE POST PAGE */}
-          {activePage === 'post' && selectedPost && (
+          {activePage === 'post' && selectedPost ? (
             <SinglePostView
               post={selectedPost}
               settings={settings}
@@ -231,12 +250,8 @@ export default function App() {
               onSelectPost={handleSelectPost}
               onSelectCategory={handleNavigateCategory}
             />
-          )}
-
-          {/* VIEW 3: HOMEPAGE (SIMPLE VIDEO POST CARDS AS BLOG POSTS) */}
-          {activePage === 'home' && (
+          ) : (
             <div className="px-4 sm:px-6 py-6 sm:py-8">
-              {/* Lead Kicker / Filter Header */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 mb-2 border-b border-slate-200 gap-4">
                 <div>
                   <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight leading-snug">
@@ -259,7 +274,6 @@ export default function App() {
                   </p>
                 </div>
 
-                {/* Filter and Sort tabs */}
                 <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-lg text-xs font-semibold self-start sm:self-auto">
                   <button
                     onClick={() => setSortBy('latest')}
@@ -286,7 +300,6 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Video Post Cards as Blog Posts */}
               {displayedPosts.length === 0 ? (
                 <div className="py-16 text-center text-slate-500 space-y-3">
                   <div className="w-12 h-12 rounded-full bg-slate-100 mx-auto flex items-center justify-center text-slate-400">
@@ -319,7 +332,6 @@ export default function App() {
           )}
         </main>
 
-        {/* Global Footer */}
         <Footer
           settings={settings}
           onNavigateHome={handleNavigateHome}
@@ -328,7 +340,6 @@ export default function App() {
         />
       </div>
 
-      {/* Admin Login Modal (with Supabase Auth & Instant Demo Mode) */}
       <AdminLoginModal
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
@@ -337,7 +348,6 @@ export default function App() {
         onOpenSupabaseConfig={() => setIsSupabaseModalOpen(true)}
       />
 
-      {/* Supabase Settings Modal */}
       <SupabaseSettingsModal
         isOpen={isSupabaseModalOpen}
         onClose={() => setIsSupabaseModalOpen(false)}
