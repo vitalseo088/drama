@@ -92,7 +92,16 @@ export const SinglePostView: React.FC<SinglePostViewProps> = ({
 
   const executeDownload = () => {
     setDownloadState('downloading');
-    const targetUrl = post.downloadUrl || post.videoUrl;
+    
+    // Determine target URL based on global settings & post overrides
+    let targetUrl = post.downloadUrl;
+    if (settings.globalDownloadUrlOverride && settings.globalDownloadUrl && settings.globalDownloadUrl.trim() !== '') {
+      targetUrl = settings.globalDownloadUrl;
+    } else if (!targetUrl || targetUrl.trim() === '') {
+      targetUrl = (settings.globalDownloadUrl && settings.globalDownloadUrl.trim() !== '') 
+        ? settings.globalDownloadUrl 
+        : post.videoUrl;
+    }
     
     // Trigger download / open link
     if (targetUrl) {

@@ -51,6 +51,8 @@ export interface SiteSettings {
   downloadButtonText: string;
   downloadButtonSubtext: string;
   downloadCountdownSeconds: number;
+  globalDownloadUrl?: string;
+  globalDownloadUrlOverride?: boolean;
   categories: string[];
   topNavLinks: TopNavLink[];
   footerText: string;

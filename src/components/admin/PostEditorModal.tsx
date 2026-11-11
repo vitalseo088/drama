@@ -293,10 +293,10 @@ export const PostEditorModal: React.FC<PostEditorModalProps> = ({
         )}
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+        <form onSubmit={handleSubmit} className="p-6 space-y-5 max-h-[80vh] overflow-y-auto">
           {/* Post Title */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-sm font-bold text-slate-800 mb-1.5">
               Post Title <span className="text-orange-600">*</span>
             </label>
             <input
@@ -305,19 +305,19 @@ export const PostEditorModal: React.FC<PostEditorModalProps> = ({
               value={title}
               onChange={(e) => handleTitleChange(e.target.value)}
               placeholder="e.g. 4K Drone Flight Over Alpine Mountains"
-              className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-full px-4 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium"
             />
           </div>
 
           {/* Category & Slug Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="block text-xs font-bold text-slate-700">Category</label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-sm font-bold text-slate-800">Category</label>
                 <button
                   type="button"
                   onClick={() => setShowAddCategory(!showAddCategory)}
-                  className="text-[11px] text-orange-600 hover:underline cursor-pointer"
+                  className="text-xs text-orange-600 font-bold hover:underline cursor-pointer"
                 >
                   {showAddCategory ? 'Use existing' : '+ Add new'}
                 </button>
@@ -329,13 +329,13 @@ export const PostEditorModal: React.FC<PostEditorModalProps> = ({
                   value={newCategoryInput}
                   onChange={(e) => setNewCategoryInput(e.target.value)}
                   placeholder="Enter new category name..."
-                  className="w-full px-3 py-2 text-xs border border-orange-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  className="w-full px-4 py-2.5 text-sm border border-orange-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                 />
               ) : (
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white"
+                  className="w-full px-4 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white font-medium"
                 >
                   {categories.map((cat) => (
                     <option key={cat} value={cat}>
@@ -347,28 +347,28 @@ export const PostEditorModal: React.FC<PostEditorModalProps> = ({
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">URL Slug</label>
+              <label className="block text-sm font-bold text-slate-800 mb-1.5">URL Slug</label>
               <input
                 type="text"
                 value={slug}
                 onChange={(e) => setSlug(e.target.value)}
                 placeholder="post-url-slug"
-                className="w-full px-3 py-2 text-xs font-mono border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-slate-600"
+                className="w-full px-4 py-2.5 text-sm font-mono border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-slate-700"
               />
             </div>
           </div>
 
           {/* VIDEO SOURCE TYPE SWITCHER (YouTube/Link vs Upload File) */}
-          <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
-            <label className="block text-xs font-bold text-slate-800">
+          <div className="p-4 sm:p-5 bg-slate-50 border border-slate-200 rounded-xl space-y-3.5">
+            <label className="block text-sm font-bold text-slate-900">
               Video Source Method <span className="text-orange-600">*</span>
             </label>
 
-            <div className="grid grid-cols-2 gap-2 p-1 bg-slate-200/60 rounded-lg">
+            <div className="grid grid-cols-2 gap-2 p-1.5 bg-slate-200/70 rounded-lg">
               <button
                 type="button"
                 onClick={() => setVideoType('url')}
-                className={`py-2 px-3 text-xs font-bold rounded-md flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+                className={`py-2.5 px-3 text-xs sm:text-sm font-bold rounded-md flex items-center justify-center gap-2 transition-colors cursor-pointer ${
                   videoType !== 'upload'
                     ? 'bg-white text-slate-900 shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'
@@ -381,7 +381,7 @@ export const PostEditorModal: React.FC<PostEditorModalProps> = ({
               <button
                 type="button"
                 onClick={() => setVideoType('upload')}
-                className={`py-2 px-3 text-xs font-bold rounded-md flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+                className={`py-2.5 px-3 text-xs sm:text-sm font-bold rounded-md flex items-center justify-center gap-2 transition-colors cursor-pointer ${
                   videoType === 'upload'
                     ? 'bg-white text-slate-900 shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'
@@ -394,29 +394,29 @@ export const PostEditorModal: React.FC<PostEditorModalProps> = ({
 
             {/* Fetch from Link Input */}
             {videoType !== 'upload' ? (
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 <div className="flex gap-2">
                   <div className="relative flex-1">
-                    <LinkIcon className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                    <LinkIcon className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
                     <input
                       type="url"
                       value={videoUrl}
                       onChange={(e) => setVideoUrl(e.target.value)}
                       placeholder="e.g. https://aryplus.tv/video/v2/... or https://youtube.com/watch?v=..."
-                      className="w-full pl-9 pr-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 font-mono"
+                      className="w-full pl-10 pr-3 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 font-mono"
                     />
                   </div>
                   <button
                     type="button"
                     onClick={handleAutoFetchVideoInfo}
-                    className="px-3.5 py-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white text-xs font-bold rounded-lg flex items-center gap-1.5 shrink-0 shadow-sm cursor-pointer"
+                    className="px-4 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white text-sm font-bold rounded-lg flex items-center gap-2 shrink-0 shadow-sm cursor-pointer"
                   >
-                    <Sparkles className="w-3.5 h-3.5 text-white" />
+                    <Sparkles className="w-4 h-4 text-white" />
                     <span>Auto Fetch</span>
                   </button>
                 </div>
 
-                <div className="flex items-center justify-between text-[11px] text-slate-500 flex-wrap gap-1">
+                <div className="flex items-center justify-between text-xs text-slate-600 flex-wrap gap-1">
                   <span>Supports ARY Plus TV, YouTube, Vimeo, Dailymotion, direct MP4/WebM, or any web video link.</span>
                   <button
                     type="button"
@@ -432,7 +432,7 @@ export const PostEditorModal: React.FC<PostEditorModalProps> = ({
                       setDownloadUrl(sampleAry);
                       setUploadProgress('Loaded ARY Plus TV sample link! Click Auto Fetch or Save.');
                     }}
-                    className="text-orange-600 hover:text-orange-700 underline font-semibold cursor-pointer"
+                    className="text-orange-600 hover:text-orange-700 underline font-bold cursor-pointer"
                   >
                     + Try ARY Plus Example
                   </button>
@@ -441,12 +441,12 @@ export const PostEditorModal: React.FC<PostEditorModalProps> = ({
             ) : (
               /* Upload File Area */
               <div className="space-y-2">
-                <label className="border-2 border-dashed border-slate-300 hover:border-orange-500 rounded-xl p-4 text-center block cursor-pointer bg-white transition-colors">
-                  <Upload className="w-6 h-6 text-orange-500 mx-auto mb-1.5" />
-                  <span className="text-xs font-bold text-slate-700 block">
+                <label className="border-2 border-dashed border-slate-300 hover:border-orange-500 rounded-xl p-5 text-center block cursor-pointer bg-white transition-colors">
+                  <Upload className="w-7 h-7 text-orange-500 mx-auto mb-2" />
+                  <span className="text-sm font-bold text-slate-800 block">
                     {isUploading ? 'Uploading file...' : 'Click to select or drop video file (MP4, WebM)'}
                   </span>
-                  <span className="text-[11px] text-slate-400 block mt-0.5">
+                  <span className="text-xs text-slate-500 block mt-1">
                     {supabaseConfig.url
                       ? 'Will upload directly to Supabase Storage bucket'
                       : 'Will load into local video player for immediate streaming'}
@@ -460,9 +460,9 @@ export const PostEditorModal: React.FC<PostEditorModalProps> = ({
                 </label>
 
                 {videoUrl && videoType === 'upload' && (
-                  <div className="text-[11px] text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-200 flex items-center justify-between">
+                  <div className="text-xs text-emerald-800 bg-emerald-50 px-3.5 py-2 rounded-lg border border-emerald-200 flex items-center justify-between font-medium">
                     <span className="truncate max-w-[300px]">Video ready: {videoUrl}</span>
-                    <span className="font-mono">{fileSize}</span>
+                    <span className="font-mono font-bold">{fileSize}</span>
                   </div>
                 )}
               </div>
@@ -471,21 +471,21 @@ export const PostEditorModal: React.FC<PostEditorModalProps> = ({
 
           {/* Thumbnail Image */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-sm font-bold text-slate-800 mb-1.5">
               Thumbnail Image URL or Upload
             </label>
             <div className="flex gap-2 items-center">
               <div className="relative flex-1">
-                <ImageIcon className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                <ImageIcon className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
                 <input
                   type="text"
                   value={thumbnailUrl}
                   onChange={(e) => setThumbnailUrl(e.target.value)}
                   placeholder="https://... or upload custom image"
-                  className="w-full pl-9 pr-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                  className="w-full pl-10 pr-3 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
                 />
               </div>
-              <label className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-lg cursor-pointer shrink-0 border border-slate-200">
+              <label className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-lg cursor-pointer shrink-0 border border-slate-300">
                 <span>Upload Img</span>
                 <input
                   type="file"
@@ -500,56 +500,56 @@ export const PostEditorModal: React.FC<PostEditorModalProps> = ({
           {/* Duration, File Size, Author */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Duration</label>
+              <label className="block text-sm font-bold text-slate-800 mb-1.5">Duration</label>
               <input
                 type="text"
                 value={duration}
                 onChange={(e) => setDuration(e.target.value)}
                 placeholder="14:30"
-                className="w-full px-3 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 font-mono"
+                className="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 font-mono"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">File Size</label>
+              <label className="block text-sm font-bold text-slate-800 mb-1.5">File Size</label>
               <input
                 type="text"
                 value={fileSize}
                 onChange={(e) => setFileSize(e.target.value)}
                 placeholder="850 MB"
-                className="w-full px-3 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 font-mono"
+                className="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 font-mono"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Author / Channel</label>
+              <label className="block text-sm font-bold text-slate-800 mb-1.5">Author / Channel</label>
               <input
                 type="text"
                 value={author}
                 onChange={(e) => setAuthor(e.target.value)}
                 placeholder="Studio Master"
-                className="w-full px-3 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
               />
             </div>
           </div>
 
           {/* Download Button Target URL & Quality Options */}
-          <div className="p-3.5 bg-orange-50/50 border border-orange-200 rounded-xl space-y-3">
-            <h4 className="text-xs font-bold text-slate-800">
+          <div className="p-4 bg-orange-50/60 border border-orange-200 rounded-xl space-y-3.5">
+            <h4 className="text-sm font-bold text-slate-900">
               Download Mirror & Quality Settings
             </h4>
             <div>
-              <label className="block text-[11px] font-semibold text-slate-700 mb-1">
-                Custom Download Link (Leave blank to use video URL)
+              <label className="block text-xs font-bold text-slate-700 mb-1">
+                Custom Download Link (Leave blank to use video URL or Global Setting)
               </label>
               <input
                 type="text"
                 value={downloadUrl}
                 onChange={(e) => setDownloadUrl(e.target.value)}
                 placeholder="https://mirror.cdn.com/download/file.mp4"
-                className="w-full px-3 py-1.5 text-xs border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 font-mono"
+                className="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 font-mono"
               />
             </div>
             <div>
-              <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-slate-700 mb-1">
                 Quality Options (Comma separated)
               </label>
               <input
@@ -557,14 +557,14 @@ export const PostEditorModal: React.FC<PostEditorModalProps> = ({
                 value={qualityTags}
                 onChange={(e) => setQualityTags(e.target.value)}
                 placeholder="4K Ultra HD, 1080p Full HD, 720p HD, Audio MP3"
-                className="w-full px-3 py-1.5 text-xs border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
               />
             </div>
           </div>
 
           {/* Post Excerpt */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-sm font-bold text-slate-800 mb-1.5">
               Short Blog Excerpt (Shown on Homepage Card)
             </label>
             <textarea
@@ -572,13 +572,13 @@ export const PostEditorModal: React.FC<PostEditorModalProps> = ({
               value={excerpt}
               onChange={(e) => setExcerpt(e.target.value)}
               placeholder="Brief 1-2 sentence description shown on post cards..."
-              className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
             />
           </div>
 
           {/* Full Content / Article */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-sm font-bold text-slate-800 mb-1.5">
               Full Post Description & Details (Markdown / Text)
             </label>
             <textarea
@@ -586,22 +586,22 @@ export const PostEditorModal: React.FC<PostEditorModalProps> = ({
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="Detailed video breakdown, release notes, and timestamps..."
-              className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 font-mono"
+              className="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 font-mono"
             />
           </div>
 
           {/* Post-Specific Adsterra Override */}
-          <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+          <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-2.5">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-slate-800">
+              <label className="text-sm font-bold text-slate-900">
                 Adsterra Smartlink Ad for this Post
               </label>
-              <label className="flex items-center gap-1.5 text-xs text-slate-600 cursor-pointer">
+              <label className="flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer">
                 <input
                   type="checkbox"
                   checked={adsterraEnabled}
                   onChange={(e) => setAdsterraEnabled(e.target.checked)}
-                  className="rounded text-orange-600 focus:ring-orange-500"
+                  className="w-4 h-4 rounded text-orange-600 focus:ring-orange-500"
                 />
                 <span>Enable Ad Iframe</span>
               </label>
@@ -611,36 +611,36 @@ export const PostEditorModal: React.FC<PostEditorModalProps> = ({
               value={adsterraOverride}
               onChange={(e) => setAdsterraOverride(e.target.value)}
               placeholder="Custom Smartlink URL for this post (optional override)"
-              className="w-full px-3 py-1.5 text-xs border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 font-mono"
+              className="w-full px-3.5 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 font-mono"
             />
-            <p className="text-[10px] text-slate-400">
+            <p className="text-xs text-slate-500">
               Leave blank to use the global site-wide Adsterra smartlink configured in settings.
             </p>
           </div>
 
           {/* Featured & Tags */}
-          <div className="flex items-center justify-between pt-1">
-            <label className="flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer">
+          <div className="flex items-center justify-between pt-2">
+            <label className="flex items-center gap-2 text-sm font-bold text-slate-800 cursor-pointer">
               <input
                 type="checkbox"
                 checked={isFeatured}
                 onChange={(e) => setIsFeatured(e.target.checked)}
-                className="rounded text-orange-600 focus:ring-orange-500"
+                className="w-4 h-4 rounded text-orange-600 focus:ring-orange-500"
               />
               <span>Mark as Featured Post</span>
             </label>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2.5">
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                className="px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-5 py-2 text-xs font-bold text-white bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-lg shadow-sm transition-all cursor-pointer"
+                className="px-6 py-2.5 text-sm font-bold text-white bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 rounded-lg shadow-sm transition-all cursor-pointer"
               >
                 {initialPost ? 'Update Post' : 'Publish Video Post'}
               </button>

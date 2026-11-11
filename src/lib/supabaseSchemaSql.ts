@@ -92,6 +92,8 @@ CREATE TABLE IF NOT EXISTS public.settings (
   download_button_text TEXT DEFAULT 'DOWNLOAD VIDEO NOW',
   download_button_subtext TEXT DEFAULT 'Ultra Fast Mirror • 1080p 60fps Full HD • Direct Download',
   download_countdown_seconds INT DEFAULT 3,
+  global_download_url TEXT DEFAULT '',
+  global_download_url_override BOOLEAN DEFAULT FALSE,
   categories TEXT[] DEFAULT '{"Entertainment & Dramas", "Tech & AI", "Cinematic 4K", "Game Trailers", "Tutorials", "Music & Beats"}',
   top_nav_links JSONB DEFAULT '[
     {"id": "1", "label": "Home", "path": "/"},

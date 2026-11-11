@@ -13,6 +13,8 @@ export const INITIAL_SETTINGS: SiteSettings = {
   downloadButtonText: 'DOWNLOAD VIDEO NOW',
   downloadButtonSubtext: 'Ultra Fast Mirror • 1080p 60fps Full HD • Direct Download',
   downloadCountdownSeconds: 3,
+  globalDownloadUrl: '',
+  globalDownloadUrlOverride: false,
   categories: ['Entertainment & Dramas', 'Tech & AI', 'Cinematic 4K', 'Game Trailers', 'Tutorials', 'Music & Beats'],
   topNavLinks: [
     { id: '1', label: 'Home', path: '/' },

@@ -74,6 +74,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   const [downloadText, setDownloadText] = useState(settings.downloadButtonText);
   const [downloadSubtext, setDownloadSubtext] = useState(settings.downloadButtonSubtext);
   const [downloadCountdown, setDownloadCountdown] = useState(settings.downloadCountdownSeconds);
+  const [globalDownloadUrl, setGlobalDownloadUrl] = useState(settings.globalDownloadUrl || '');
+  const [globalDownloadUrlOverride, setGlobalDownloadUrlOverride] = useState(settings.globalDownloadUrlOverride || false);
 
   const [siteTitle, setSiteTitle] = useState(settings.siteTitle);
   const [siteTagline, setSiteTagline] = useState(settings.siteTagline);
@@ -228,12 +230,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       downloadButtonText: downloadText.trim(),
       downloadButtonSubtext: downloadSubtext.trim(),
       downloadCountdownSeconds: Number(downloadCountdown),
+      globalDownloadUrl: globalDownloadUrl.trim(),
+      globalDownloadUrlOverride,
     };
     onUpdateSettings(updated);
     if (settings.supabaseConfig.url && settings.supabaseConfig.anonKey) {
       saveSettingsToSupabase(updated, settings.supabaseConfig);
     }
-    showSuccess('Orange Download Button settings updated!');
+    showSuccess('Orange Download Button & Global Link settings updated!');
   };
 
   // SAVE SITE IDENTITY
@@ -314,37 +318,37 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         <div className="flex items-center gap-3">
           <button
             onClick={onBackToSite}
-            className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer"
+            className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer"
             title="Return to Website"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
-            <div className="flex items-center gap-2">
-              <span className="font-extrabold text-base tracking-tight text-white">StreamPost Control Center</span>
-              <span className="px-2 py-0.5 bg-orange-600 text-white font-mono text-[10px] font-bold rounded uppercase">
+            <div className="flex items-center gap-2.5">
+              <span className="font-extrabold text-lg sm:text-xl tracking-tight text-white">StreamPost Control Center</span>
+              <span className="px-2.5 py-0.5 bg-orange-600 text-white font-mono text-xs font-bold rounded uppercase">
                 Admin
               </span>
             </div>
-            <p className="text-xs text-slate-400">
-              Logged in as: <span className="text-slate-200 font-mono">{adminEmail || 'admin@streampost.local'}</span>
+            <p className="text-sm text-slate-400 mt-0.5">
+              Logged in as: <span className="text-slate-200 font-mono font-medium">{adminEmail || 'admin@streampost.local'}</span>
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           <button
             onClick={onBackToSite}
-            className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-bold rounded-lg flex items-center gap-2 transition-colors cursor-pointer"
           >
-            <Eye className="w-3.5 h-3.5" />
+            <Eye className="w-4 h-4" />
             <span>View Live Site</span>
           </button>
           <button
             onClick={onLogout}
-            className="px-3 py-1.5 bg-rose-950/60 hover:bg-rose-900 text-rose-300 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="px-4 py-2 bg-rose-950/70 hover:bg-rose-900 text-rose-200 text-sm font-bold rounded-lg flex items-center gap-2 transition-colors cursor-pointer"
           >
-            <LogOut className="w-3.5 h-3.5" />
+            <LogOut className="w-4 h-4" />
             <span>Logout</span>
           </button>
         </div>
@@ -352,8 +356,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
       {/* Global Success Banner */}
       {savedSuccessMsg && (
-        <div className="px-4 sm:px-6 py-2.5 bg-emerald-500 text-white text-xs font-semibold flex items-center gap-2 animate-in fade-in duration-150">
-          <Check className="w-4 h-4 stroke-[3]" />
+        <div className="px-4 sm:px-6 py-3 bg-emerald-600 text-white text-sm font-bold flex items-center gap-2 animate-in fade-in duration-150">
+          <Check className="w-5 h-5 stroke-[3]" />
           <span>{savedSuccessMsg}</span>
         </div>
       )}
@@ -362,73 +366,73 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       <div className="border-b border-slate-200 bg-slate-50 px-4 sm:px-6 flex items-center gap-1 overflow-x-auto no-scrollbar">
         <button
           onClick={() => setActiveTab('posts')}
-          className={`py-3 px-3.5 text-xs font-bold border-b-2 flex items-center gap-2 transition-colors cursor-pointer shrink-0 ${
+          className={`py-3.5 px-4 text-sm sm:text-base font-bold border-b-2 flex items-center gap-2.5 transition-colors cursor-pointer shrink-0 ${
             activeTab === 'posts'
               ? 'border-orange-600 text-orange-600 bg-white'
               : 'border-transparent text-slate-600 hover:text-slate-900'
           }`}
         >
-          <Film className="w-4 h-4" />
+          <Film className="w-5 h-5" />
           <span>Manage Posts ({posts.length})</span>
         </button>
 
         <button
           onClick={() => setActiveTab('menu')}
-          className={`py-3 px-3.5 text-xs font-bold border-b-2 flex items-center gap-2 transition-colors cursor-pointer shrink-0 ${
+          className={`py-3.5 px-4 text-sm sm:text-base font-bold border-b-2 flex items-center gap-2.5 transition-colors cursor-pointer shrink-0 ${
             activeTab === 'menu'
               ? 'border-orange-600 text-orange-600 bg-white'
               : 'border-transparent text-slate-600 hover:text-slate-900'
           }`}
         >
-          <Layers className="w-4 h-4" />
+          <Layers className="w-5 h-5" />
           <span>Top Menu & Categories</span>
         </button>
 
         <button
           onClick={() => setActiveTab('adsterra')}
-          className={`py-3 px-3.5 text-xs font-bold border-b-2 flex items-center gap-2 transition-colors cursor-pointer shrink-0 ${
+          className={`py-3.5 px-4 text-sm sm:text-base font-bold border-b-2 flex items-center gap-2.5 transition-colors cursor-pointer shrink-0 ${
             activeTab === 'adsterra'
               ? 'border-orange-600 text-orange-600 bg-white'
               : 'border-transparent text-slate-600 hover:text-slate-900'
           }`}
         >
-          <Radio className="w-4 h-4" />
+          <Radio className="w-5 h-5" />
           <span>Adsterra Smartlink Ad</span>
         </button>
 
         <button
           onClick={() => setActiveTab('download_btn')}
-          className={`py-3 px-3.5 text-xs font-bold border-b-2 flex items-center gap-2 transition-colors cursor-pointer shrink-0 ${
+          className={`py-3.5 px-4 text-sm sm:text-base font-bold border-b-2 flex items-center gap-2.5 transition-colors cursor-pointer shrink-0 ${
             activeTab === 'download_btn'
               ? 'border-orange-600 text-orange-600 bg-white'
               : 'border-transparent text-slate-600 hover:text-slate-900'
           }`}
         >
-          <Download className="w-4 h-4" />
+          <Download className="w-5 h-5" />
           <span>Orange Download Button</span>
         </button>
 
         <button
           onClick={() => setActiveTab('supabase')}
-          className={`py-3 px-3.5 text-xs font-bold border-b-2 flex items-center gap-2 transition-colors cursor-pointer shrink-0 ${
+          className={`py-3.5 px-4 text-sm sm:text-base font-bold border-b-2 flex items-center gap-2.5 transition-colors cursor-pointer shrink-0 ${
             activeTab === 'supabase'
               ? 'border-orange-600 text-orange-600 bg-white'
               : 'border-transparent text-slate-600 hover:text-slate-900'
           }`}
         >
-          <Database className="w-4 h-4" />
+          <Database className="w-5 h-5" />
           <span>Supabase Auth & Storage</span>
         </button>
 
         <button
           onClick={() => setActiveTab('general')}
-          className={`py-3 px-3.5 text-xs font-bold border-b-2 flex items-center gap-2 transition-colors cursor-pointer shrink-0 ${
+          className={`py-3.5 px-4 text-sm sm:text-base font-bold border-b-2 flex items-center gap-2.5 transition-colors cursor-pointer shrink-0 ${
             activeTab === 'general'
               ? 'border-orange-600 text-orange-600 bg-white'
               : 'border-transparent text-slate-600 hover:text-slate-900'
           }`}
         >
-          <Sliders className="w-4 h-4" />
+          <Sliders className="w-5 h-5" />
           <span>Site Settings</span>
         </button>
       </div>
@@ -438,22 +442,22 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         <div className="p-4 sm:p-6 space-y-5">
           {/* Action Row */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="relative flex-1 max-w-sm">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+            <div className="relative flex-1 max-w-md">
+              <Search className="w-5 h-5 text-slate-400 absolute left-3.5 top-3" />
               <input
                 type="text"
                 value={postSearch}
                 onChange={(e) => setPostSearch(e.target.value)}
                 placeholder="Search video posts by title, category, or tag..."
-                className="w-full pl-9 pr-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full pl-11 pr-4 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium"
               />
             </div>
 
             <button
               onClick={handleCreatePost}
-              className="px-4 py-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-xs rounded-lg shadow-sm flex items-center justify-center gap-2 transition-all cursor-pointer"
+              className="px-5 py-2.5 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-bold text-sm rounded-lg shadow-sm flex items-center justify-center gap-2 transition-all cursor-pointer"
             >
-              <Plus className="w-4 h-4 stroke-[3]" />
+              <Plus className="w-5 h-5 stroke-[3]" />
               <span>Create New Video Post</span>
             </button>
           </div>
@@ -461,95 +465,95 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           {/* Posts Table */}
           <div className="border border-slate-200 rounded-xl overflow-hidden shadow-xs">
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
+              <table className="w-full text-left text-sm border-collapse">
                 <thead>
-                  <tr className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
-                    <th className="py-3 px-4">Post & Video</th>
-                    <th className="py-3 px-3">Category</th>
-                    <th className="py-3 px-3">Source</th>
-                    <th className="py-3 px-3">Duration & Size</th>
-                    <th className="py-3 px-3">Views</th>
-                    <th className="py-3 px-4 text-right">Actions</th>
+                  <tr className="bg-slate-100 text-slate-800 font-bold text-sm border-b border-slate-200">
+                    <th className="py-3.5 px-4">Post & Video</th>
+                    <th className="py-3.5 px-3">Category</th>
+                    <th className="py-3.5 px-3">Source</th>
+                    <th className="py-3.5 px-3">Duration & Size</th>
+                    <th className="py-3.5 px-3">Views</th>
+                    <th className="py-3.5 px-4 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-slate-100 text-sm">
                   {filteredPosts.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="py-8 text-center text-slate-400">
+                      <td colSpan={6} className="py-10 text-center text-slate-500 font-medium text-sm">
                         No video posts found matching your search.
                       </td>
                     </tr>
                   ) : (
                     filteredPosts.map((post) => (
                       <tr key={post.id} className="hover:bg-slate-50/80 transition-colors">
-                        <td className="py-3 px-4">
+                        <td className="py-3.5 px-4">
                           <div className="flex items-center gap-3">
                             <img
                               src={post.thumbnailUrl}
                               alt=""
-                              className="w-14 h-9 object-cover rounded bg-slate-200 shrink-0 border border-slate-200"
+                              className="w-16 h-10 object-cover rounded bg-slate-200 shrink-0 border border-slate-200"
                               referrerPolicy="no-referrer"
                             />
                             <div className="min-w-0 max-w-xs sm:max-w-sm">
-                              <span className="font-bold text-slate-900 block truncate hover:text-orange-600 cursor-pointer" onClick={() => onViewPost(post)}>
+                              <span className="font-bold text-slate-900 text-sm sm:text-base block truncate hover:text-orange-600 cursor-pointer" onClick={() => onViewPost(post)}>
                                 {post.title}
                               </span>
-                              <span className="text-[11px] text-slate-400 font-mono truncate block">
+                              <span className="text-xs text-slate-500 font-mono truncate block">
                                 /{post.slug}
                               </span>
                             </div>
                           </div>
                         </td>
-                        <td className="py-3 px-3">
-                          <span className="text-slate-700 font-medium">{post.category}</span>
+                        <td className="py-3.5 px-3">
+                          <span className="text-slate-800 font-semibold text-sm">{post.category}</span>
                         </td>
-                        <td className="py-3 px-3">
+                        <td className="py-3.5 px-3">
                           {post.videoType === 'upload' ? (
-                            <span className="inline-flex items-center gap-1 text-[11px] text-orange-600 bg-orange-50 px-2 py-0.5 rounded font-medium">
-                              <Upload className="w-3 h-3" /> Upload
+                            <span className="inline-flex items-center gap-1 text-xs text-orange-700 bg-orange-50 px-2.5 py-1 rounded-md font-bold">
+                              <Upload className="w-3.5 h-3.5" /> Upload
                             </span>
                           ) : post.videoType === 'aryplus' ? (
-                            <span className="inline-flex items-center gap-1 text-[11px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded font-medium border border-amber-200">
-                              <Globe className="w-3 h-3 text-amber-600" /> ARY Plus
+                            <span className="inline-flex items-center gap-1 text-xs text-amber-800 bg-amber-50 px-2.5 py-1 rounded-md font-bold border border-amber-200">
+                              <Globe className="w-3.5 h-3.5 text-amber-600" /> ARY Plus
                             </span>
                           ) : post.videoType === 'youtube' ? (
-                            <span className="inline-flex items-center gap-1 text-[11px] text-red-600 bg-red-50 px-2 py-0.5 rounded font-medium">
-                              <Youtube className="w-3 h-3" /> YouTube
+                            <span className="inline-flex items-center gap-1 text-xs text-red-700 bg-red-50 px-2.5 py-1 rounded-md font-bold">
+                              <Youtube className="w-3.5 h-3.5" /> YouTube
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 text-[11px] text-slate-700 bg-slate-100 px-2 py-0.5 rounded font-medium">
-                              <Globe className="w-3 h-3 text-slate-500" /> Web Link
+                            <span className="inline-flex items-center gap-1 text-xs text-slate-800 bg-slate-100 px-2.5 py-1 rounded-md font-bold">
+                              <Globe className="w-3.5 h-3.5 text-slate-500" /> Web Link
                             </span>
                           )}
                         </td>
-                        <td className="py-3 px-3 font-mono text-[11px] text-slate-600">
+                        <td className="py-3.5 px-3 font-mono text-xs sm:text-sm text-slate-700 font-medium">
                           {post.duration} • {post.fileSize}
                         </td>
-                        <td className="py-3 px-3 font-mono text-slate-600">
+                        <td className="py-3.5 px-3 font-mono text-sm text-slate-800 font-semibold">
                           {formatViewCount(post.views)}
                         </td>
-                        <td className="py-3 px-4 text-right">
-                          <div className="flex items-center justify-end gap-1.5">
+                        <td className="py-3.5 px-4 text-right">
+                          <div className="flex items-center justify-end gap-2">
                             <button
                               onClick={() => onViewPost(post)}
-                              className="p-1.5 text-slate-500 hover:text-slate-900 rounded hover:bg-slate-100 cursor-pointer"
+                              className="p-2 text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-100 cursor-pointer"
                               title="Preview Post"
                             >
-                              <ExternalLink className="w-3.5 h-3.5" />
+                              <ExternalLink className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => handleEditPost(post)}
-                              className="p-1.5 text-slate-600 hover:text-orange-600 rounded hover:bg-slate-100 cursor-pointer"
+                              className="p-2 text-slate-700 hover:text-orange-600 rounded-lg hover:bg-slate-100 cursor-pointer"
                               title="Edit Post"
                             >
-                              <Edit3 className="w-3.5 h-3.5" />
+                              <Edit3 className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => handleDeletePost(post.id)}
-                              className="p-1.5 text-slate-400 hover:text-rose-600 rounded hover:bg-rose-50 cursor-pointer"
+                              className="p-2 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-rose-50 cursor-pointer"
                               title="Delete Post"
                             >
-                              <Trash2 className="w-3.5 h-3.5" />
+                              <Trash2 className="w-4 h-4" />
                             </button>
                           </div>
                         </td>
@@ -565,62 +569,62 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
       {/* TAB 2: TOP MENU & CATEGORIES */}
       {activeTab === 'menu' && (
-        <div className="p-4 sm:p-6 space-y-8">
+        <div className="p-4 sm:p-6 space-y-8 max-w-4xl">
           {/* Top Menu Links Manager */}
-          <div className="p-5 border border-slate-200 rounded-xl bg-white shadow-xs space-y-4">
+          <div className="p-5 sm:p-6 border border-slate-200 rounded-xl bg-white shadow-xs space-y-5">
             <div>
-              <h3 className="text-sm font-bold text-slate-900">Top Navigation Menu Management</h3>
-              <p className="text-xs text-slate-500">
+              <h3 className="text-base sm:text-lg font-bold text-slate-900">Top Navigation Menu Management</h3>
+              <p className="text-sm text-slate-600 mt-0.5">
                 Manage the links visible in the header menu at the top of the 960px single column layout.
               </p>
             </div>
 
             {/* Existing Links List */}
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               {navLinks.map((link) => (
                 <div
                   key={link.id}
-                  className="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+                  className="flex items-center justify-between p-3.5 bg-slate-50 border border-slate-200 rounded-lg text-sm"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="font-bold text-slate-800">{link.label}</span>
-                    <span className="text-slate-400 font-mono text-[11px]">{link.path}</span>
+                    <span className="font-bold text-slate-900 text-sm sm:text-base">{link.label}</span>
+                    <span className="text-slate-500 font-mono text-xs">{link.path}</span>
                   </div>
                   {link.label !== 'Home' ? (
                     <button
                       onClick={() => handleDeleteNavLink(link.id)}
-                      className="text-slate-400 hover:text-rose-600 p-1 cursor-pointer"
+                      className="text-slate-400 hover:text-rose-600 p-1.5 cursor-pointer rounded-md hover:bg-rose-50"
                       title="Remove Menu Link"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   ) : (
-                    <span className="text-[10px] text-slate-400 font-medium">Default</span>
+                    <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Default</span>
                   )}
                 </div>
               ))}
             </div>
 
             {/* Add New Link */}
-            <div className="pt-2 border-t border-slate-100 flex flex-col sm:flex-row gap-2">
+            <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row gap-3">
               <input
                 type="text"
                 placeholder="Link Label (e.g. 4K Reels)"
                 value={newLinkLabel}
                 onChange={(e) => setNewLinkLabel(e.target.value)}
-                className="flex-1 px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="flex-1 px-4 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium"
               />
               <input
                 type="text"
                 placeholder="Path (e.g. /category/4k-reels)"
                 value={newLinkPath}
                 onChange={(e) => setNewLinkPath(e.target.value)}
-                className="flex-1 px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 font-mono"
+                className="flex-1 px-4 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 font-mono"
               />
               <button
                 type="button"
                 onClick={handleAddNavLink}
-                className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-lg transition-colors cursor-pointer shrink-0"
+                className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm rounded-lg transition-colors cursor-pointer shrink-0"
               >
                 + Add Menu Link
               </button>
@@ -628,50 +632,50 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
           </div>
 
           {/* Categories Management */}
-          <div className="p-5 border border-slate-200 rounded-xl bg-white shadow-xs space-y-4">
+          <div className="p-5 sm:p-6 border border-slate-200 rounded-xl bg-white shadow-xs space-y-5">
             <div>
-              <h3 className="text-sm font-bold text-slate-900">Post Categories</h3>
-              <p className="text-xs text-slate-500">
+              <h3 className="text-base sm:text-lg font-bold text-slate-900">Post Categories</h3>
+              <p className="text-sm text-slate-600 mt-0.5">
                 Categories are used for homepage filtering and generating related videos on single post pages.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {categoriesList.map((cat) => {
                 const count = posts.filter((p) => p.category === cat).length;
                 return (
                   <div
                     key={cat}
-                    className="flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs"
+                    className="flex items-center justify-between p-3.5 bg-slate-50 border border-slate-200 rounded-lg text-sm"
                   >
                     <div>
-                      <span className="font-bold text-slate-800">{cat}</span>
-                      <span className="ml-2 text-[11px] text-slate-400">({count} posts)</span>
+                      <span className="font-bold text-slate-900 text-sm sm:text-base">{cat}</span>
+                      <span className="ml-2 text-xs font-semibold text-slate-500">({count} posts)</span>
                     </div>
                     <button
                       onClick={() => handleDeleteCategory(cat)}
-                      className="text-slate-400 hover:text-rose-600 p-1 cursor-pointer"
+                      className="text-slate-400 hover:text-rose-600 p-1.5 cursor-pointer rounded-md hover:bg-rose-50"
                       title="Delete category"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 );
               })}
             </div>
 
-            <div className="pt-2 border-t border-slate-100 flex gap-2">
+            <div className="pt-3 border-t border-slate-100 flex gap-3">
               <input
                 type="text"
                 placeholder="New Category Name (e.g. Soundtracks & SFX)"
                 value={newCategoryName}
                 onChange={(e) => setNewCategoryName(e.target.value)}
-                className="flex-1 px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="flex-1 px-4 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 font-medium"
               />
               <button
                 type="button"
                 onClick={handleAddCategory}
-                className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs rounded-lg transition-colors cursor-pointer shrink-0"
+                className="px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-bold text-sm rounded-lg transition-colors cursor-pointer shrink-0"
               >
                 + Add Category
               </button>
@@ -682,19 +686,19 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
       {/* TAB 3: ADSTERRA SMARTLINK AD SETTINGS */}
       {activeTab === 'adsterra' && (
-        <form onSubmit={handleSaveAdsterra} className="p-4 sm:p-6 max-w-2xl space-y-5">
-          <div className="p-4 bg-orange-50/60 border border-orange-200 rounded-xl space-y-1.5">
-            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-              <Radio className="w-4 h-4 text-orange-600" />
+        <form onSubmit={handleSaveAdsterra} className="p-4 sm:p-6 max-w-3xl space-y-6">
+          <div className="p-5 bg-orange-50/70 border border-orange-200 rounded-xl space-y-2">
+            <h3 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+              <Radio className="w-5 h-5 text-orange-600" />
               <span>Adsterra Smartlink Ad Integration</span>
             </h3>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              As requested, the single post page displays a full-width iframe for your Adsterra smartlink ad directly on the website right above the post title.
+            <p className="text-sm text-slate-700 leading-relaxed">
+              As requested, single post pages display a full-width iframe for your Adsterra smartlink ad directly on the website right above the post title.
             </p>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-sm font-bold text-slate-800 mb-1.5">
               Global Adsterra Smartlink URL <span className="text-orange-600">*</span>
             </label>
             <input
@@ -703,34 +707,34 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               value={adsterraUrl}
               onChange={(e) => setAdsterraUrl(e.target.value)}
               placeholder="https://beta.publishers.adsterra.com/direct-link-url"
-              className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 font-mono"
+              className="w-full px-4 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 font-mono"
             />
-            <p className="text-[11px] text-slate-400 mt-1">
-              Your publisher smartlink / direct link code from Adsterra. Posts can also have unique overrides.
+            <p className="text-xs text-slate-500 mt-1">
+              Your publisher smartlink / direct link URL from Adsterra. Posts can also have unique overrides.
             </p>
           </div>
 
           {/* Ad Size & Aspect Ratio Selector */}
-          <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+          <div className="p-5 bg-slate-50 border border-slate-200 rounded-xl space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <label className="block text-xs font-bold text-slate-800">
+                <label className="block text-sm font-bold text-slate-900">
                   Ad Container Sizing & Aspect Ratio
                 </label>
-                <p className="text-[11px] text-slate-500">
-                  Select 1:1 equal size to guarantee a perfect square ad that dynamically scales to fit all screens.
+                <p className="text-xs text-slate-600 mt-0.5">
+                  Select 1:1 equal size to guarantee a square ad container that dynamically scales across devices.
                 </p>
               </div>
-              <span className="px-2 py-0.5 bg-orange-100 text-orange-700 font-bold text-[10px] rounded uppercase font-mono">
+              <span className="px-3 py-1 bg-orange-100 text-orange-800 font-bold text-xs rounded uppercase font-mono">
                 {adsterraAspectRatio === '1:1' ? '1:1 Active' : 'Custom Height'}
               </span>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 p-1 bg-slate-200/60 rounded-lg">
+            <div className="grid grid-cols-2 gap-2 p-1.5 bg-slate-200/70 rounded-lg">
               <button
                 type="button"
                 onClick={() => setAdsterraAspectRatio('1:1')}
-                className={`py-2 px-3 text-xs font-bold rounded-md flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+                className={`py-2.5 px-4 text-xs sm:text-sm font-bold rounded-md flex items-center justify-center gap-2 transition-colors cursor-pointer ${
                   adsterraAspectRatio === '1:1'
                     ? 'bg-white text-slate-900 shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'
@@ -742,7 +746,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               <button
                 type="button"
                 onClick={() => setAdsterraAspectRatio('custom')}
-                className={`py-2 px-3 text-xs font-bold rounded-md flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+                className={`py-2.5 px-4 text-xs sm:text-sm font-bold rounded-md flex items-center justify-center gap-2 transition-colors cursor-pointer ${
                   adsterraAspectRatio === 'custom'
                     ? 'bg-white text-slate-900 shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'
@@ -753,18 +757,18 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             </div>
 
             {adsterraAspectRatio === '1:1' ? (
-              <div className="p-3 bg-white border border-slate-200 rounded-lg text-xs text-slate-600 space-y-1">
-                <div className="font-semibold text-slate-900 flex items-center gap-1.5 text-xs">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <div className="p-4 bg-white border border-slate-200 rounded-lg text-sm text-slate-700 space-y-1">
+                <div className="font-bold text-slate-900 flex items-center gap-2 text-sm">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
                   <span>1:1 Square Mode Active (aspect-square)</span>
                 </div>
-                <p className="text-[11px] text-slate-500">
+                <p className="text-xs text-slate-600">
                   Height automatically matches 100% of the screen/container width: 360px on mobile, 768px on tablets, and 960px on desktop screens.
                 </p>
               </div>
             ) : (
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
+                <label className="block text-sm font-bold text-slate-800 mb-1.5">
                   Custom Iframe Height (Pixels)
                 </label>
                 <input
@@ -774,29 +778,29 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                   step="20"
                   value={adsterraHeight}
                   onChange={(e) => setAdsterraHeight(Number(e.target.value))}
-                  className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 font-mono"
+                  className="w-full px-4 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 font-mono"
                 />
               </div>
             )}
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-sm font-bold text-slate-800 mb-1.5">
               Monetization State
             </label>
-            <label className="flex items-center gap-2 p-2.5 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer text-xs font-semibold text-slate-800">
+            <label className="flex items-center gap-3 p-3.5 bg-slate-50 border border-slate-200 rounded-lg cursor-pointer text-sm font-bold text-slate-900">
               <input
                 type="checkbox"
                 checked={adsterraEnabled}
                 onChange={(e) => setAdsterraEnabled(e.target.checked)}
-                className="rounded text-orange-600 focus:ring-orange-500"
+                className="w-4 h-4 rounded text-orange-600 focus:ring-orange-500"
               />
               <span>Enable Adsterra Iframe on Single Posts</span>
             </label>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-sm font-bold text-slate-800 mb-1.5">
               Ad Notice / Disclaimer Text
             </label>
             <input
@@ -804,106 +808,170 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               value={adsterraNotice}
               onChange={(e) => setAdsterraNotice(e.target.value)}
               placeholder="Sponsored Announcement • Support Our Free High-Speed Video Mirror"
-              className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-full px-4 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
             />
           </div>
 
           <div className="pt-2 flex items-center gap-3">
             <button
               type="submit"
-              className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-lg transition-colors cursor-pointer"
+              className="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm rounded-lg transition-colors cursor-pointer shadow-sm"
             >
               Save Adsterra Configuration
             </button>
             <button
               type="button"
               onClick={() => window.open(adsterraUrl, '_blank')}
-              className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-lg transition-colors cursor-pointer flex items-center gap-1.5"
+              className="px-5 py-3 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-sm rounded-lg transition-colors cursor-pointer flex items-center gap-2 border border-slate-200"
             >
-              <ExternalLink className="w-3.5 h-3.5" />
+              <ExternalLink className="w-4 h-4" />
               <span>Test Smartlink URL</span>
             </button>
           </div>
         </form>
       )}
 
-      {/* TAB 4: ORANGE DOWNLOAD BUTTON SETTINGS */}
+      {/* TAB 4: ORANGE DOWNLOAD BUTTON & GLOBAL LINK SETTINGS */}
       {activeTab === 'download_btn' && (
-        <form onSubmit={handleSaveDownloadSettings} className="p-4 sm:p-6 max-w-2xl space-y-6">
-          <div>
-            <h3 className="text-sm font-bold text-slate-900">Orange Gradient Download Button Customization</h3>
-            <p className="text-xs text-slate-500">
-              Customize the prominent orange gradient download CTA rendered beneath each video.
+        <form onSubmit={handleSaveDownloadSettings} className="p-4 sm:p-6 max-w-3xl space-y-6">
+          <div className="border-b border-slate-200 pb-4">
+            <h3 className="text-lg font-extrabold text-slate-900 flex items-center gap-2">
+              <Download className="w-5 h-5 text-orange-600" />
+              <span>Orange Gradient Download Button & Global Mirror Link Settings</span>
+            </h3>
+            <p className="text-sm text-slate-600 mt-1">
+              Customize the prominent orange gradient download CTA rendered beneath videos and configure global mirror redirect links.
             </p>
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              Primary Button Text
-            </label>
-            <input
-              type="text"
-              value={downloadText}
-              onChange={(e) => setDownloadText(e.target.value)}
-              placeholder="DOWNLOAD VIDEO NOW"
-              className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 font-bold"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              Button Subtext / Quality Tagline
-            </label>
-            <input
-              type="text"
-              value={downloadSubtext}
-              onChange={(e) => setDownloadSubtext(e.target.value)}
-              placeholder="Ultra Fast Mirror • 1080p 60fps Full HD • Direct Download"
-              className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              Countdown Delay in Seconds (0 = Instant Download)
-            </label>
-            <input
-              type="number"
-              min="0"
-              max="15"
-              value={downloadCountdown}
-              onChange={(e) => setDownloadCountdown(Number(e.target.value))}
-              className="w-32 px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 font-mono"
-            />
-            <p className="text-[11px] text-slate-400 mt-1">
-              Shows a brief "Securing dedicated link..." countdown before unlocking the download file.
+          {/* GLOBAL DOWNLOAD LINK CONFIGURATION */}
+          <div className="p-5 bg-orange-50/70 border border-orange-200 rounded-xl space-y-4">
+            <h4 className="text-base font-bold text-slate-900 flex items-center gap-2">
+              <Globe className="w-5 h-5 text-orange-600" />
+              <span>Global Download / Mirror Link Configuration</span>
+            </h4>
+            <p className="text-sm text-slate-700 leading-relaxed">
+              Set a universal download destination URL for your site. You can use this as a global default fallback or force all video posts to redirect to this single link.
             </p>
+
+            <div>
+              <label className="block text-sm font-bold text-slate-800 mb-1.5">
+                Global Download / Mirror URL
+              </label>
+              <input
+                type="text"
+                value={globalDownloadUrl}
+                onChange={(e) => setGlobalDownloadUrl(e.target.value)}
+                placeholder="https://drive.google.com/uc?export=download&id=..."
+                className="w-full px-4 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 font-mono bg-white"
+              />
+              <p className="text-xs text-slate-500 mt-1">
+                Enter direct download link, Google Drive export URL, TeraBox, Mega, or external mirror endpoint.
+              </p>
+            </div>
+
+            <div className="pt-2">
+              <label className="flex items-start gap-3 p-3.5 bg-white border border-orange-200 rounded-lg cursor-pointer hover:bg-orange-50/40 transition-colors">
+                <input
+                  type="checkbox"
+                  checked={globalDownloadUrlOverride}
+                  onChange={(e) => setGlobalDownloadUrlOverride(e.target.checked)}
+                  className="mt-0.5 w-4 h-4 rounded text-orange-600 focus:ring-orange-500"
+                />
+                <div>
+                  <span className="text-sm font-bold text-slate-900 block">
+                    Override All Posts Download Links Globally
+                  </span>
+                  <span className="text-xs text-slate-600 leading-normal block mt-0.5">
+                    {globalDownloadUrlOverride ? (
+                      <span className="text-orange-700 font-semibold">
+                        ACTIVE: All video download buttons on every post will redirect to the Global Download URL above.
+                      </span>
+                    ) : (
+                      <span>
+                        INACTIVE: Posts will use their individual post download links if set, otherwise falling back to the Global Download URL or video URL.
+                      </span>
+                    )}
+                  </span>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          {/* BUTTON APPEARANCE & TEXT */}
+          <div className="space-y-4">
+            <h4 className="text-base font-bold text-slate-900">Button Text & Timing</h4>
+
+            <div>
+              <label className="block text-sm font-bold text-slate-800 mb-1.5">
+                Primary Button Label Text
+              </label>
+              <input
+                type="text"
+                value={downloadText}
+                onChange={(e) => setDownloadText(e.target.value)}
+                placeholder="DOWNLOAD VIDEO NOW"
+                className="w-full px-4 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 font-bold"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-slate-800 mb-1.5">
+                Button Subtext / Quality Tagline
+              </label>
+              <input
+                type="text"
+                value={downloadSubtext}
+                onChange={(e) => setDownloadSubtext(e.target.value)}
+                placeholder="Ultra Fast Mirror • 1080p 60fps Full HD • Direct Download"
+                className="w-full px-4 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-bold text-slate-800 mb-1.5">
+                Countdown Delay in Seconds (0 = Instant Download)
+              </label>
+              <input
+                type="number"
+                min="0"
+                max="15"
+                value={downloadCountdown}
+                onChange={(e) => setDownloadCountdown(Number(e.target.value))}
+                className="w-36 px-4 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 font-mono font-bold"
+              />
+              <p className="text-xs text-slate-500 mt-1">
+                Shows a brief "Securing dedicated link..." countdown before initiating file download.
+              </p>
+            </div>
           </div>
 
           {/* Interactive Live Button Preview */}
-          <div className="p-5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
-              Live Button Preview:
+          <div className="p-5 bg-slate-50 border border-slate-200 rounded-xl space-y-3">
+            <span className="text-xs font-bold text-slate-600 uppercase tracking-wider block">
+              Live Interactive Button Preview:
             </span>
-            <div className="w-full py-4 px-6 rounded-xl bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 text-white font-extrabold text-lg shadow-lg shadow-orange-500/25 flex items-center justify-center gap-3">
-              <Download className="w-6 h-6 stroke-[2.5]" />
+            <div className="w-full py-4.5 px-6 rounded-xl bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 text-white font-extrabold text-xl shadow-lg shadow-orange-500/25 flex items-center justify-center gap-3">
+              <Download className="w-7 h-7 stroke-[2.5]" />
               <div className="text-left">
-                <div className="tracking-wide uppercase text-sm sm:text-base">
+                <div className="tracking-wide uppercase text-base sm:text-lg font-black">
                   {downloadText || 'DOWNLOAD VIDEO NOW'}
                 </div>
-                <div className="text-xs font-medium text-orange-100 opacity-90">
+                <div className="text-xs sm:text-sm font-medium text-orange-100 opacity-95">
                   {downloadSubtext || 'Ultra Fast Mirror • 1080p Full HD'}
                 </div>
               </div>
             </div>
           </div>
 
-          <button
-            type="submit"
-            className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-lg transition-colors cursor-pointer"
-          >
-            Save Button Settings
-          </button>
+          <div className="pt-2">
+            <button
+              type="submit"
+              className="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm rounded-lg shadow-sm transition-colors cursor-pointer"
+            >
+              Save Orange Button & Global Link Settings
+            </button>
+          </div>
         </form>
       )}
 
@@ -911,19 +979,19 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       {activeTab === 'supabase' && (
         <div className="p-4 sm:p-6 max-w-3xl space-y-6">
           {/* Connection Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-xl gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0">
-                <Database className="w-5 h-5" />
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between p-5 bg-slate-50 border border-slate-200 rounded-xl gap-4">
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                <Database className="w-6 h-6" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-slate-900">Supabase Database & Storage</h3>
-                <p className="text-xs text-slate-500">
+                <h3 className="text-base sm:text-lg font-bold text-slate-900">Supabase Database & Storage</h3>
+                <p className="text-sm text-slate-600 mt-0.5">
                   Status:{' '}
                   {settings.supabaseConfig.url ? (
-                    <span className="text-emerald-600 font-bold">Connected ({settings.supabaseConfig.url})</span>
+                    <span className="text-emerald-700 font-bold">Connected ({settings.supabaseConfig.url})</span>
                   ) : (
-                    <span className="text-amber-600 font-medium">Demo Mode active (Configure credentials to connect real Supabase)</span>
+                    <span className="text-amber-700 font-semibold">Demo Mode active (Configure credentials to connect real Supabase)</span>
                   )}
                 </p>
               </div>
@@ -931,33 +999,33 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
             <button
               onClick={() => setIsSupabaseModalOpen(true)}
-              className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-lg transition-colors cursor-pointer shrink-0"
+              className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm rounded-lg transition-colors cursor-pointer shrink-0"
             >
               Configure Credentials
             </button>
           </div>
 
           {/* Sync & Seed Controls */}
-          <div className="p-4 border border-slate-200 rounded-xl bg-white space-y-3">
-            <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+          <div className="p-5 border border-slate-200 rounded-xl bg-white space-y-4 shadow-xs">
+            <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider">
               Database Sync & Seed Operations
             </h4>
-            <p className="text-xs text-slate-500">
+            <p className="text-sm text-slate-600">
               Transfer video posts and settings directly to your Supabase PostgreSQL database tables.
             </p>
 
             {supabaseSyncMsg && (
-              <div className="p-3 bg-slate-100 border border-slate-200 rounded-lg text-xs font-medium text-slate-800">
+              <div className="p-3.5 bg-slate-100 border border-slate-200 rounded-lg text-sm font-semibold text-slate-800">
                 {supabaseSyncMsg}
               </div>
             )}
 
-            <div className="flex flex-wrap gap-2 pt-1">
+            <div className="flex flex-wrap gap-3 pt-1">
               <button
                 type="button"
                 disabled={isSyncingSupabase}
                 onClick={handleSeedToSupabase}
-                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold rounded-lg transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50 shadow-xs"
               >
                 <span>{isSyncingSupabase ? 'Processing...' : 'Seed Sample Data to Supabase'}</span>
               </button>
@@ -966,7 +1034,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                 type="button"
                 disabled={isSyncingSupabase}
                 onClick={handleSyncFromSupabase}
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-lg border border-slate-200 transition-colors flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 text-sm font-bold rounded-lg border border-slate-300 transition-colors flex items-center gap-2 cursor-pointer disabled:opacity-50"
               >
                 <span>Pull & Sync from Supabase</span>
               </button>
@@ -975,20 +1043,20 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
           {/* SQL CODE TO CREATE TABLES (The user request) */}
           <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-xs">
-            <div className="p-4 bg-slate-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="p-5 bg-slate-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <h4 className="text-sm font-bold flex items-center gap-2">
-                  <Database className="w-4 h-4 text-emerald-400" />
+                <h4 className="text-base font-bold flex items-center gap-2">
+                  <Database className="w-5 h-5 text-emerald-400" />
                   <span>Production SQL Script: Tables & Storage Setup</span>
                 </h4>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <p className="text-xs sm:text-sm text-slate-400 mt-1">
                   Run this query in your Supabase SQL Editor to initialize all tables, RLS policies, and storage buckets.
                 </p>
               </div>
 
               <button
                 onClick={handleCopySql}
-                className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs rounded-lg shadow-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0"
+                className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-sm rounded-lg shadow-sm flex items-center justify-center gap-2 transition-all cursor-pointer shrink-0"
               >
                 {copiedSql ? (
                   <>
@@ -1005,10 +1073,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
             </div>
 
             {/* Quick Step-by-Step Instructions */}
-            <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 text-xs text-slate-600">
+            <div className="px-5 py-3.5 bg-slate-50 border-b border-slate-200 text-sm text-slate-700">
               <span className="font-bold text-slate-900 block mb-1">3 Simple Steps in Supabase:</span>
-              <ol className="list-decimal list-inside space-y-1 text-slate-600">
-                <li>Log in to <a href="https://supabase.com/dashboard" target="_blank" rel="noreferrer" className="text-orange-600 underline font-semibold">Supabase Dashboard</a> and open your project.</li>
+              <ol className="list-decimal list-inside space-y-1 text-slate-700 font-medium">
+                <li>Log in to <a href="https://supabase.com/dashboard" target="_blank" rel="noreferrer" className="text-orange-600 underline font-bold">Supabase Dashboard</a> and open your project.</li>
                 <li>Click <strong>SQL Editor</strong> in the left menu, then click <strong>New Query</strong>.</li>
                 <li>Click <strong>Copy Full SQL Script</strong> above, paste it into the editor, and click <strong>RUN</strong>.</li>
               </ol>
@@ -1016,7 +1084,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
             {/* Code Block */}
             <div className="relative">
-              <pre className="p-4 bg-slate-950 text-slate-200 text-[11px] font-mono overflow-x-auto max-h-96 leading-relaxed selection:bg-orange-600 selection:text-white">
+              <pre className="p-5 bg-slate-950 text-slate-200 text-xs sm:text-sm font-mono overflow-x-auto max-h-96 leading-relaxed selection:bg-orange-600 selection:text-white">
                 <code>{SUPABASE_SQL_SCHEMA}</code>
               </pre>
             </div>
@@ -1026,16 +1094,16 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
       {/* TAB 6: SITE GENERAL SETTINGS */}
       {activeTab === 'general' && (
-        <form onSubmit={handleSaveSiteIdentity} className="p-4 sm:p-6 max-w-2xl space-y-4">
+        <form onSubmit={handleSaveSiteIdentity} className="p-4 sm:p-6 max-w-3xl space-y-6">
           <div>
-            <h3 className="text-sm font-bold text-slate-900">General Website Settings</h3>
-            <p className="text-xs text-slate-500">
+            <h3 className="text-lg font-bold text-slate-900">General Website Settings</h3>
+            <p className="text-sm text-slate-600 mt-0.5">
               Control the single column boxed 960px layout title, header wordmark, and footer.
             </p>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-sm font-bold text-slate-800 mb-1.5">
               Website Name & Logo Text
             </label>
             <input
@@ -1043,12 +1111,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               value={logoText}
               onChange={(e) => setLogoText(e.target.value)}
               placeholder="StreamPost"
-              className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 font-bold"
+              className="w-full px-4 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 font-bold"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-sm font-bold text-slate-800 mb-1.5">
               Website Tagline
             </label>
             <input
@@ -1056,12 +1124,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               value={siteTagline}
               onChange={(e) => setSiteTagline(e.target.value)}
               placeholder="Curated Video Releases & High-Speed Mirror"
-              className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-full px-4 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
+            <label className="block text-sm font-bold text-slate-800 mb-1.5">
               Footer Disclaimer & Copyright
             </label>
             <textarea
@@ -1069,13 +1137,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
               value={footerText}
               onChange={(e) => setFooterText(e.target.value)}
               placeholder="Footer text..."
-              className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+              className="w-full px-4 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
             />
           </div>
 
           <button
             type="submit"
-            className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-lg transition-colors cursor-pointer"
+            className="px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm rounded-lg transition-colors cursor-pointer shadow-sm"
           >
             Save General Settings
           </button>
