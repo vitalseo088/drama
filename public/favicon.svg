@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="streampost-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f97316" />
+      <stop offset="100%" stop-color="#d97706" />
+    </linearGradient>
+  </defs>
+  <!-- Background Rounded Badge -->
+  <rect x="4" y="4" width="56" height="56" rx="14" ry="14" fill="url(#streampost-grad)" />
+  <!-- Video Camera Body -->
+  <rect x="14" y="21" width="22" height="22" rx="4" fill="#ffffff" />
+  <!-- Video Camera Lens -->
+  <path d="M 39 26.5 L 50 20.5 L 50 43.5 L 39 37.5 Z" fill="#ffffff" />
+</svg>
