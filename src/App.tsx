@@ -79,11 +79,9 @@ export default function App() {
     const config = settings.supabaseConfig;
     if (config?.url && config?.anonKey && config.url.trim() !== '') {
       fetchPostsFromSupabase(config).then(({ data, error }) => {
-        if (!error && data && data.length > 0) {
+        if (!error && data) {
           setPosts(data);
           savePosts(data);
-        } else if (!error && data && data.length === 0) {
-          seedInitialDataToSupabase(posts, settings, config);
         }
       });
 
@@ -301,20 +299,36 @@ export default function App() {
               </div>
 
               {displayedPosts.length === 0 ? (
-                <div className="py-16 text-center text-slate-500 space-y-3">
-                  <div className="w-12 h-12 rounded-full bg-slate-100 mx-auto flex items-center justify-center text-slate-400">
-                    <SlidersHorizontal className="w-5 h-5" />
+                <div className="py-20 text-center text-slate-500 space-y-4">
+                  <div className="w-14 h-14 rounded-full bg-orange-50 mx-auto flex items-center justify-center text-orange-500 border border-orange-100">
+                    <SlidersHorizontal className="w-6 h-6" />
                   </div>
-                  <h3 className="text-sm font-bold text-slate-800">No video posts found</h3>
-                  <p className="text-xs text-slate-400 max-w-sm mx-auto">
-                    Try clearing your search query or category filter to browse our full video library.
-                  </p>
-                  <button
-                    onClick={handleNavigateHome}
-                    className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs rounded-lg transition-colors cursor-pointer"
-                  >
-                    Reset All Filters
-                  </button>
+                  <div>
+                    <h3 className="text-base font-bold text-slate-800">
+                      {searchQuery || selectedCategory ? 'No matching video posts found' : 'No Video Posts Published Yet'}
+                    </h3>
+                    <p className="text-sm text-slate-500 max-w-md mx-auto mt-1">
+                      {searchQuery || selectedCategory
+                        ? 'Try clearing your search query or category filter to browse all published video posts.'
+                        : 'Only posts saved in your Supabase database or published via the Admin Panel will appear here.'}
+                    </p>
+                  </div>
+
+                  {searchQuery || selectedCategory ? (
+                    <button
+                      onClick={handleNavigateHome}
+                      className="px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-bold text-sm rounded-lg transition-colors cursor-pointer"
+                    >
+                      Reset All Filters
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleOpenAdmin}
+                      className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm rounded-lg transition-colors cursor-pointer inline-flex items-center gap-2"
+                    >
+                      <span>Open Admin Control Center to Add Video Post</span>
+                    </button>
+                  )}
                 </div>
               ) : (
                 <div className="space-y-0">

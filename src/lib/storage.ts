@@ -9,24 +9,23 @@ export function getStoredPosts(): VideoPost[] {
   try {
     const raw = localStorage.getItem(STORAGE_POSTS_KEY);
     if (!raw) {
-      localStorage.setItem(STORAGE_POSTS_KEY, JSON.stringify(INITIAL_POSTS));
-      return INITIAL_POSTS;
+      localStorage.setItem(STORAGE_POSTS_KEY, JSON.stringify([]));
+      return [];
     }
     const parsed = JSON.parse(raw);
-    if (Array.isArray(parsed) && parsed.length > 0) {
-      // Ensure initial demo posts like ARY Plus TV are accessible
-      const hasAryPost = parsed.some((p: any) => p.id === 'post-ary-1');
-      if (!hasAryPost && INITIAL_POSTS[0]) {
-        const merged = [INITIAL_POSTS[0], ...parsed];
-        localStorage.setItem(STORAGE_POSTS_KEY, JSON.stringify(merged));
-        return merged;
+    if (Array.isArray(parsed)) {
+      // Filter out old hardcoded dummy posts if present
+      const dummyIds = ['post-ary-1', 'post-1', 'post-2', 'post-3', 'post-4', 'post-5', 'post-6'];
+      const userSavedPosts = parsed.filter((p: any) => !dummyIds.includes(p.id));
+      if (userSavedPosts.length !== parsed.length) {
+        localStorage.setItem(STORAGE_POSTS_KEY, JSON.stringify(userSavedPosts));
       }
-      return parsed;
+      return userSavedPosts;
     }
-    return INITIAL_POSTS;
+    return [];
   } catch (e) {
     console.error('Failed to parse posts from localStorage', e);
-    return INITIAL_POSTS;
+    return [];
   }
 }
 
