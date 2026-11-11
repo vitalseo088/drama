@@ -21,6 +21,12 @@ import { AdminLoginModal } from './components/admin/AdminLoginModal';
 import { SupabaseSettingsModal } from './components/admin/SupabaseSettingsModal';
 import { Footer } from './components/Footer';
 import { Sparkles, SlidersHorizontal, Flame, Clock } from 'lucide-react';
+import {
+  fetchPostsFromSupabase,
+  fetchSettingsFromSupabase,
+  seedInitialDataToSupabase,
+  incrementPostViewsInSupabase,
+} from './lib/supabaseDb';
 
 export default function App() {
   const [posts, setPosts] = useState<VideoPost[]>(getStoredPosts);
@@ -45,6 +51,32 @@ export default function App() {
       setAdminEmail(session.userEmail);
     }
   }, []);
+
+  // Supabase live database sync on startup
+  useEffect(() => {
+    const config = settings.supabaseConfig;
+    if (config?.url && config?.anonKey && config.url.trim() !== '') {
+      fetchPostsFromSupabase(config).then(({ data, error }) => {
+        if (!error && data && data.length > 0) {
+          setPosts(data);
+          savePosts(data);
+        } else if (!error && data && data.length === 0) {
+          // Table exists but is empty -> auto seed initial posts
+          seedInitialDataToSupabase(posts, settings, config);
+        }
+      });
+
+      fetchSettingsFromSupabase(config).then(({ data, error }) => {
+        if (!error && data) {
+          setSettings((prev) => {
+            const merged = { ...prev, ...data };
+            saveSettings(merged);
+            return merged;
+          });
+        }
+      });
+    }
+  }, [settings.supabaseConfig?.url, settings.supabaseConfig?.anonKey]);
 
   // Save posts on update
   const handleUpdatePosts = (newPosts: VideoPost[]) => {
@@ -87,6 +119,10 @@ export default function App() {
     handleUpdatePosts(updated);
     setSelectedPost({ ...post, views: post.views + 1 });
     setActivePage('post');
+
+    if (settings.supabaseConfig?.url && settings.supabaseConfig?.anonKey) {
+      incrementPostViewsInSupabase(post.id, post.views, settings.supabaseConfig);
+    }
   };
 
   const handleOpenAdmin = () => {

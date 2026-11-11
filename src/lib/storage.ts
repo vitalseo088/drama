@@ -13,7 +13,17 @@ export function getStoredPosts(): VideoPost[] {
       return INITIAL_POSTS;
     }
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) && parsed.length > 0 ? parsed : INITIAL_POSTS;
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      // Ensure initial demo posts like ARY Plus TV are accessible
+      const hasAryPost = parsed.some((p: any) => p.id === 'post-ary-1');
+      if (!hasAryPost && INITIAL_POSTS[0]) {
+        const merged = [INITIAL_POSTS[0], ...parsed];
+        localStorage.setItem(STORAGE_POSTS_KEY, JSON.stringify(merged));
+        return merged;
+      }
+      return parsed;
+    }
+    return INITIAL_POSTS;
   } catch (e) {
     console.error('Failed to parse posts from localStorage', e);
     return INITIAL_POSTS;

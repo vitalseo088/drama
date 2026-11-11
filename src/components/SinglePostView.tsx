@@ -16,6 +16,7 @@ import { VideoPost, SiteSettings } from '../types';
 import { AdsterraIframe } from './AdsterraIframe';
 import { RelatedPosts } from './RelatedPosts';
 import { formatViewCount, getYouTubeEmbedUrl } from '../lib/storage';
+import { resolveVideoSource } from '../lib/videoProviders';
 
 interface SinglePostViewProps {
   post: VideoPost;
@@ -227,31 +228,60 @@ export const SinglePostView: React.FC<SinglePostViewProps> = ({
 
         {/* 
           EXACT REQUIREMENT 3:
-          "then actual video"
+          "then actual video" (Universal Player: YouTube, ARY Plus TV, Vimeo, Web Video, Uploaded File)
         */}
         <div className="my-6">
-          <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black shadow-md border border-slate-200">
-            {post.videoType === 'youtube' ? (
-              <iframe
-                src={getYouTubeEmbedUrl(post.videoUrl)}
-                title={post.title}
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                allowFullScreen
-                className="w-full h-full border-0"
-              />
-            ) : (
-              <video
-                controls
-                poster={post.thumbnailUrl}
-                className="w-full h-full object-contain bg-black"
-                preload="metadata"
-              >
-                <source src={post.videoUrl} type="video/mp4" />
-                <source src={post.videoUrl} type="video/webm" />
-                Your browser does not support the video tag.
-              </video>
-            )}
-          </div>
+          {(() => {
+            const videoInfo = resolveVideoSource(post.videoUrl);
+            const isDirectVideo = post.videoType === 'upload' || videoInfo.isDirectVideoTag;
+
+            return (
+              <div className="space-y-2">
+                {/* Source Badge for External Portals (like ARY Plus TV) */}
+                {videoInfo.provider !== 'youtube' && !isDirectVideo && (
+                  <div className="flex items-center justify-between px-3 py-1.5 bg-slate-100 rounded-lg text-xs text-slate-600 border border-slate-200">
+                    <span className="flex items-center gap-1.5 font-semibold text-slate-800">
+                      <FileVideo className="w-3.5 h-3.5 text-orange-600" />
+                      <span>Video Source: {videoInfo.providerName}</span>
+                    </span>
+                    <a
+                      href={post.videoUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-orange-600 hover:text-orange-700 font-semibold flex items-center gap-1 hover:underline text-[11px]"
+                    >
+                      <span>Open on {videoInfo.providerName}</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
+                )}
+
+                <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black shadow-md border border-slate-200">
+                  {isDirectVideo ? (
+                    <video
+                      controls
+                      poster={post.thumbnailUrl}
+                      className="w-full h-full object-contain bg-black"
+                      preload="metadata"
+                    >
+                      <source src={post.videoUrl} type="video/mp4" />
+                      <source src={post.videoUrl} type="video/webm" />
+                      Your browser does not support the video tag.
+                    </video>
+                  ) : (
+                    <iframe
+                      src={videoInfo.embedUrl || post.videoUrl}
+                      title={post.title}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
+                      allowFullScreen
+                      className="w-full h-full border-0"
+                      sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-presentation"
+                    />
+                  )}
+                </div>
+              </div>
+            );
+          })()}
         </div>
 
         {/* 

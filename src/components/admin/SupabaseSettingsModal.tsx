@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, Database, Check, AlertCircle, RefreshCw, Key, Link as LinkIcon, HardDrive } from 'lucide-react';
 import { SupabaseConfig } from '../../types';
 import { testSupabaseConnection, resetSupabaseClient } from '../../lib/supabase';
+import { SUPABASE_SQL_SCHEMA } from '../../lib/supabaseSchemaSql';
 
 interface SupabaseSettingsModalProps {
   isOpen: boolean;
@@ -68,14 +69,26 @@ export const SupabaseSettingsModal: React.FC<SupabaseSettingsModalProps> = ({
 
         {/* Content */}
         <div className="p-6 space-y-4">
-          <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-600 leading-relaxed">
-            <p className="font-semibold text-slate-800 mb-1">How to obtain Supabase credentials:</p>
-            <ol className="list-decimal list-inside space-y-0.5 text-slate-600">
-              <li>Log in to your <strong>Supabase Dashboard</strong> (supabase.com).</li>
-              <li>Go to <strong>Project Settings → API</strong>.</li>
-              <li>Copy the <strong>Project URL</strong> and <strong>Project API Anon Key</strong>.</li>
-              <li>Ensure you have created a public Storage Bucket (e.g., <code className="bg-slate-200 px-1 rounded">videos</code>).</li>
-            </ol>
+          <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-600 leading-relaxed space-y-2">
+            <div>
+              <p className="font-semibold text-slate-800 mb-1">How to obtain Supabase credentials & setup tables:</p>
+              <ol className="list-decimal list-inside space-y-0.5 text-slate-600">
+                <li>Log in to your <strong>Supabase Dashboard</strong> (supabase.com).</li>
+                <li>Go to <strong>Project Settings → API</strong> for Project URL and Anon Key.</li>
+                <li>Go to <strong>SQL Editor</strong> and run the schema script to create tables and storage buckets.</li>
+              </ol>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                navigator.clipboard?.writeText(SUPABASE_SQL_SCHEMA);
+                setTestResult({ success: true, message: 'SQL schema copied to clipboard! Paste it into Supabase SQL Editor.' });
+              }}
+              className="w-full py-1.5 px-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold text-xs rounded-lg flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <Database className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Copy Full SQL Table Creation Script</span>
+            </button>
           </div>
 
           {testResult && (

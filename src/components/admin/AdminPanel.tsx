@@ -25,6 +25,14 @@ import { VideoPost, SiteSettings, TopNavLink, SupabaseConfig } from '../../types
 import { PostEditorModal } from './PostEditorModal';
 import { SupabaseSettingsModal } from './SupabaseSettingsModal';
 import { formatViewCount } from '../../lib/storage';
+import { SUPABASE_SQL_SCHEMA } from '../../lib/supabaseSchemaSql';
+import {
+  fetchPostsFromSupabase,
+  upsertPostToSupabase,
+  deletePostFromSupabase,
+  seedInitialDataToSupabase,
+  saveSettingsToSupabase,
+} from '../../lib/supabaseDb';
 
 interface AdminPanelProps {
   posts: VideoPost[];
@@ -80,10 +88,55 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
   // Category Management State
   const [categoriesList, setCategoriesList] = useState<string[]>(settings.categories);
   const [newCategoryName, setNewCategoryName] = useState('');
+  const [copiedSql, setCopiedSql] = useState(false);
+  const [isSyncingSupabase, setIsSyncingSupabase] = useState(false);
+  const [supabaseSyncMsg, setSupabaseSyncMsg] = useState<string | null>(null);
 
   const showSuccess = (msg: string) => {
     setSavedSuccessMsg(msg);
-    setTimeout(() => setSavedSuccessMsg(null), 3000);
+    setTimeout(() => setSavedSuccessMsg(null), 3500);
+  };
+
+  const handleCopySql = () => {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(SUPABASE_SQL_SCHEMA);
+      setCopiedSql(true);
+      setTimeout(() => setCopiedSql(false), 2500);
+      showSuccess('SQL table creation code copied! Paste in Supabase SQL Editor.');
+    }
+  };
+
+  const handleSyncFromSupabase = async () => {
+    if (!settings.supabaseConfig.url || !settings.supabaseConfig.anonKey) {
+      alert('Please configure your Supabase URL and Anon Key first.');
+      return;
+    }
+    setIsSyncingSupabase(true);
+    setSupabaseSyncMsg(null);
+    const res = await fetchPostsFromSupabase(settings.supabaseConfig);
+    if (res.error) {
+      setSupabaseSyncMsg(`Sync error: ${res.error}. Make sure you have created the tables using the SQL script.`);
+    } else if (res.data) {
+      onUpdatePosts(res.data);
+      setSupabaseSyncMsg(`Successfully fetched ${res.data.length} posts from Supabase database!`);
+      showSuccess(`Synced ${res.data.length} posts from Supabase!`);
+    }
+    setIsSyncingSupabase(false);
+  };
+
+  const handleSeedToSupabase = async () => {
+    if (!settings.supabaseConfig.url || !settings.supabaseConfig.anonKey) {
+      alert('Please configure your Supabase URL and Anon Key first.');
+      return;
+    }
+    setIsSyncingSupabase(true);
+    setSupabaseSyncMsg(null);
+    const res = await seedInitialDataToSupabase(posts, settings, settings.supabaseConfig);
+    setSupabaseSyncMsg(res.message);
+    if (res.success) {
+      showSuccess(res.message);
+    }
+    setIsSyncingSupabase(false);
   };
 
   // POST ACTIONS
@@ -102,6 +155,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       const updated = posts.filter((p) => p.id !== postId);
       onUpdatePosts(updated);
       showSuccess('Post deleted successfully');
+
+      if (settings.supabaseConfig.url && settings.supabaseConfig.anonKey) {
+        deletePostFromSupabase(postId, settings.supabaseConfig);
+      }
     }
   };
 
@@ -110,6 +167,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       p.id === postId ? { ...p, isFeatured: !p.isFeatured } : p
     );
     onUpdatePosts(updated);
+    const target = updated.find((p) => p.id === postId);
+    if (target && settings.supabaseConfig.url && settings.supabaseConfig.anonKey) {
+      upsertPostToSupabase(target, settings.supabaseConfig);
+    }
   };
 
   const handleSavePost = (savedPost: VideoPost) => {
@@ -124,11 +185,20 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
     }
     onUpdatePosts(updated);
 
+    // Save to Supabase
+    if (settings.supabaseConfig.url && settings.supabaseConfig.anonKey) {
+      upsertPostToSupabase(savedPost, settings.supabaseConfig);
+    }
+
     // If new category, auto-add to categories list
     if (!categoriesList.includes(savedPost.category)) {
       const newCats = [...categoriesList, savedPost.category];
       setCategoriesList(newCats);
-      onUpdateSettings({ ...settings, categories: newCats });
+      const newSettings = { ...settings, categories: newCats };
+      onUpdateSettings(newSettings);
+      if (settings.supabaseConfig.url && settings.supabaseConfig.anonKey) {
+        saveSettingsToSupabase(newSettings, settings.supabaseConfig);
+      }
     }
   };
 
@@ -144,6 +214,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       adsterraNoticeText: adsterraNotice.trim(),
     };
     onUpdateSettings(updated);
+    if (settings.supabaseConfig.url && settings.supabaseConfig.anonKey) {
+      saveSettingsToSupabase(updated, settings.supabaseConfig);
+    }
     showSuccess('Adsterra Smartlink ad configuration saved!');
   };
 
@@ -157,6 +230,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       downloadCountdownSeconds: Number(downloadCountdown),
     };
     onUpdateSettings(updated);
+    if (settings.supabaseConfig.url && settings.supabaseConfig.anonKey) {
+      saveSettingsToSupabase(updated, settings.supabaseConfig);
+    }
     showSuccess('Orange Download Button settings updated!');
   };
 
@@ -171,6 +247,9 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
       footerText: footerText.trim(),
     };
     onUpdateSettings(updated);
+    if (settings.supabaseConfig.url && settings.supabaseConfig.anonKey) {
+      saveSettingsToSupabase(updated, settings.supabaseConfig);
+    }
     showSuccess('Site branding and details updated!');
   };
 
@@ -429,9 +508,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
                             <span className="inline-flex items-center gap-1 text-[11px] text-orange-600 bg-orange-50 px-2 py-0.5 rounded font-medium">
                               <Upload className="w-3 h-3" /> Upload
                             </span>
-                          ) : (
+                          ) : post.videoType === 'aryplus' ? (
+                            <span className="inline-flex items-center gap-1 text-[11px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded font-medium border border-amber-200">
+                              <Globe className="w-3 h-3 text-amber-600" /> ARY Plus
+                            </span>
+                          ) : post.videoType === 'youtube' ? (
                             <span className="inline-flex items-center gap-1 text-[11px] text-red-600 bg-red-50 px-2 py-0.5 rounded font-medium">
                               <Youtube className="w-3 h-3" /> YouTube
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-[11px] text-slate-700 bg-slate-100 px-2 py-0.5 rounded font-medium">
+                              <Globe className="w-3 h-3 text-slate-500" /> Web Link
                             </span>
                           )}
                         </td>
@@ -820,22 +907,23 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
         </form>
       )}
 
-      {/* TAB 5: SUPABASE AUTH & STORAGE */}
+      {/* TAB 5: SUPABASE AUTH & STORAGE & SQL SCHEMA */}
       {activeTab === 'supabase' && (
-        <div className="p-4 sm:p-6 max-w-2xl space-y-6">
-          <div className="flex items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-xl">
+        <div className="p-4 sm:p-6 max-w-3xl space-y-6">
+          {/* Connection Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-slate-50 border border-slate-200 rounded-xl gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0">
                 <Database className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-slate-900">Supabase Auth & Storage</h3>
+                <h3 className="text-sm font-bold text-slate-900">Supabase Database & Storage</h3>
                 <p className="text-xs text-slate-500">
                   Status:{' '}
                   {settings.supabaseConfig.url ? (
                     <span className="text-emerald-600 font-bold">Connected ({settings.supabaseConfig.url})</span>
                   ) : (
-                    <span className="text-slate-500 font-medium">Demo Mode active (optional setup)</span>
+                    <span className="text-amber-600 font-medium">Demo Mode active (Configure credentials to connect real Supabase)</span>
                   )}
                 </p>
               </div>
@@ -843,26 +931,94 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({
 
             <button
               onClick={() => setIsSupabaseModalOpen(true)}
-              className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-lg transition-colors cursor-pointer"
+              className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-lg transition-colors cursor-pointer shrink-0"
             >
               Configure Credentials
             </button>
           </div>
 
-          <div className="space-y-3 text-xs text-slate-600">
-            <div className="p-4 border border-slate-200 rounded-xl space-y-2">
-              <h4 className="font-bold text-slate-800">What Supabase enables:</h4>
-              <ul className="list-disc list-inside space-y-1 text-slate-600">
-                <li>
-                  <strong>Supabase Auth</strong>: Real email and password authentication for admin users and team moderators.
-                </li>
-                <li>
-                  <strong>Supabase Storage</strong>: Upload MP4/WebM video releases and custom thumbnails directly to your Supabase storage bucket (<code className="bg-slate-100 px-1 py-0.5 rounded font-mono text-slate-700">{settings.supabaseConfig.storageBucket || 'videos'}</code>).
-                </li>
-                <li>
-                  <strong>Direct Public URLs</strong>: Instant CDN delivery of uploaded media files without local size limits.
-                </li>
-              </ul>
+          {/* Sync & Seed Controls */}
+          <div className="p-4 border border-slate-200 rounded-xl bg-white space-y-3">
+            <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+              Database Sync & Seed Operations
+            </h4>
+            <p className="text-xs text-slate-500">
+              Transfer video posts and settings directly to your Supabase PostgreSQL database tables.
+            </p>
+
+            {supabaseSyncMsg && (
+              <div className="p-3 bg-slate-100 border border-slate-200 rounded-lg text-xs font-medium text-slate-800">
+                {supabaseSyncMsg}
+              </div>
+            )}
+
+            <div className="flex flex-wrap gap-2 pt-1">
+              <button
+                type="button"
+                disabled={isSyncingSupabase}
+                onClick={handleSeedToSupabase}
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              >
+                <span>{isSyncingSupabase ? 'Processing...' : 'Seed Sample Data to Supabase'}</span>
+              </button>
+
+              <button
+                type="button"
+                disabled={isSyncingSupabase}
+                onClick={handleSyncFromSupabase}
+                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-lg border border-slate-200 transition-colors flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              >
+                <span>Pull & Sync from Supabase</span>
+              </button>
+            </div>
+          </div>
+
+          {/* SQL CODE TO CREATE TABLES (The user request) */}
+          <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-xs">
+            <div className="p-4 bg-slate-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <h4 className="text-sm font-bold flex items-center gap-2">
+                  <Database className="w-4 h-4 text-emerald-400" />
+                  <span>Production SQL Script: Tables & Storage Setup</span>
+                </h4>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Run this query in your Supabase SQL Editor to initialize all tables, RLS policies, and storage buckets.
+                </p>
+              </div>
+
+              <button
+                onClick={handleCopySql}
+                className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs rounded-lg shadow-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0"
+              >
+                {copiedSql ? (
+                  <>
+                    <Check className="w-4 h-4 stroke-[3]" />
+                    <span>SQL Copied!</span>
+                  </>
+                ) : (
+                  <>
+                    <Database className="w-4 h-4" />
+                    <span>Copy Full SQL Script</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Quick Step-by-Step Instructions */}
+            <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 text-xs text-slate-600">
+              <span className="font-bold text-slate-900 block mb-1">3 Simple Steps in Supabase:</span>
+              <ol className="list-decimal list-inside space-y-1 text-slate-600">
+                <li>Log in to <a href="https://supabase.com/dashboard" target="_blank" rel="noreferrer" className="text-orange-600 underline font-semibold">Supabase Dashboard</a> and open your project.</li>
+                <li>Click <strong>SQL Editor</strong> in the left menu, then click <strong>New Query</strong>.</li>
+                <li>Click <strong>Copy Full SQL Script</strong> above, paste it into the editor, and click <strong>RUN</strong>.</li>
+              </ol>
+            </div>
+
+            {/* Code Block */}
+            <div className="relative">
+              <pre className="p-4 bg-slate-950 text-slate-200 text-[11px] font-mono overflow-x-auto max-h-96 leading-relaxed selection:bg-orange-600 selection:text-white">
+                <code>{SUPABASE_SQL_SCHEMA}</code>
+              </pre>
             </div>
           </div>
         </div>

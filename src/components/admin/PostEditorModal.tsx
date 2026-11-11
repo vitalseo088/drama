@@ -13,6 +13,7 @@ import {
 import { VideoPost, VideoSourceType, SupabaseConfig } from '../../types';
 import { extractYouTubeId, getYouTubeThumbnail, slugify } from '../../lib/storage';
 import { uploadMediaToSupabase } from '../../lib/supabase';
+import { resolveVideoSource } from '../../lib/videoProviders';
 
 interface PostEditorModalProps {
   isOpen: boolean;
@@ -108,24 +109,43 @@ export const PostEditorModal: React.FC<PostEditorModalProps> = ({
     }
   };
 
-  // Auto-fetch YouTube thumbnail & metadata
-  const handleFetchYouTubeMeta = () => {
-    const ytId = extractYouTubeId(videoUrl);
-    if (ytId) {
-      const thumb = getYouTubeThumbnail(videoUrl);
-      if (thumb) {
-        setThumbnailUrl(thumb);
+  // Universal Video Link Auto-Fetch (YouTube, ARY Plus TV, Vimeo, Dailymotion, MP4, etc.)
+  const handleAutoFetchVideoInfo = () => {
+    if (!videoUrl || !videoUrl.trim()) {
+      setUploadError('Please enter a video URL first.');
+      return;
+    }
+
+    const info = resolveVideoSource(videoUrl);
+
+    if (info.embedUrl) {
+      if (info.thumbnailUrl && (!thumbnailUrl || thumbnailUrl.includes('unsplash.com'))) {
+        setThumbnailUrl(info.thumbnailUrl);
       }
-      if (!title) {
-        setTitle(`New Video Post (${ytId})`);
-        setSlug(`new-video-post-${ytId}`);
+      if (!title && info.titleSuggestion) {
+        setTitle(info.titleSuggestion);
+        setSlug(slugify(info.titleSuggestion));
+      }
+      if (info.durationSuggestion && (duration === '10:00' || duration === '12:30')) {
+        setDuration(info.durationSuggestion);
       }
       if (!downloadUrl) {
         setDownloadUrl(videoUrl);
       }
+      // Set appropriate videoType
+      if (info.provider === 'youtube') {
+        setVideoType('youtube');
+      } else if (info.provider === 'aryplus') {
+        setVideoType('aryplus');
+      } else if (info.provider === 'direct_stream') {
+        setVideoType('url');
+      } else {
+        setVideoType('web_embed');
+      }
       setUploadError(null);
+      setUploadProgress(`Detected ${info.providerName} stream! Ready for responsive embedding.`);
     } else {
-      setUploadError('Please enter a valid YouTube video link (e.g., https://www.youtube.com/watch?v=...)');
+      setUploadError('Could not process video URL. Please check the link format.');
     }
   };
 
@@ -347,15 +367,15 @@ export const PostEditorModal: React.FC<PostEditorModalProps> = ({
             <div className="grid grid-cols-2 gap-2 p-1 bg-slate-200/60 rounded-lg">
               <button
                 type="button"
-                onClick={() => setVideoType('youtube')}
+                onClick={() => setVideoType('url')}
                 className={`py-2 px-3 text-xs font-bold rounded-md flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
-                  videoType === 'youtube' || videoType === 'url'
+                  videoType !== 'upload'
                     ? 'bg-white text-slate-900 shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
-                <Youtube className="w-4 h-4 text-red-600" />
-                <span>Fetch from YouTube / URL</span>
+                <LinkIcon className="w-4 h-4 text-orange-600" />
+                <span>Fetch from Link (YouTube, ARY Plus, Vimeo, Web Video)</span>
               </button>
 
               <button
@@ -382,22 +402,41 @@ export const PostEditorModal: React.FC<PostEditorModalProps> = ({
                       type="url"
                       value={videoUrl}
                       onChange={(e) => setVideoUrl(e.target.value)}
-                      placeholder="https://www.youtube.com/watch?v=... or direct MP4 link"
+                      placeholder="e.g. https://aryplus.tv/video/v2/... or https://youtube.com/watch?v=..."
                       className="w-full pl-9 pr-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 font-mono"
                     />
                   </div>
                   <button
                     type="button"
-                    onClick={handleFetchYouTubeMeta}
-                    className="px-3 py-2 bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 shrink-0 cursor-pointer"
+                    onClick={handleAutoFetchVideoInfo}
+                    className="px-3.5 py-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white text-xs font-bold rounded-lg flex items-center gap-1.5 shrink-0 shadow-sm cursor-pointer"
                   >
-                    <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                    <Sparkles className="w-3.5 h-3.5 text-white" />
                     <span>Auto Fetch</span>
                   </button>
                 </div>
-                <p className="text-[11px] text-slate-500">
-                  Paste any YouTube URL or direct MP4/WebM URL. Clicking "Auto Fetch" extracts the YouTube thumbnail and sets default mirrors.
-                </p>
+
+                <div className="flex items-center justify-between text-[11px] text-slate-500 flex-wrap gap-1">
+                  <span>Supports ARY Plus TV, YouTube, Vimeo, Dailymotion, direct MP4/WebM, or any web video link.</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const sampleAry = 'https://aryplus.tv/video/v2/3/6a6e0b1e9bc4b079859bc14b/6a57868b5bf57c474cc00a50';
+                      setVideoUrl(sampleAry);
+                      const info = resolveVideoSource(sampleAry);
+                      setTitle(info.titleSuggestion || 'ARY Plus TV Video Stream');
+                      setSlug(slugify(info.titleSuggestion || 'ary-plus-video-stream'));
+                      setThumbnailUrl(info.thumbnailUrl);
+                      setVideoType('aryplus');
+                      setDuration('38:40');
+                      setDownloadUrl(sampleAry);
+                      setUploadProgress('Loaded ARY Plus TV sample link! Click Auto Fetch or Save.');
+                    }}
+                    className="text-orange-600 hover:text-orange-700 underline font-semibold cursor-pointer"
+                  >
+                    + Try ARY Plus Example
+                  </button>
+                </div>
               </div>
             ) : (
               /* Upload File Area */

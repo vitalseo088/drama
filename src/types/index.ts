@@ -1,4 +1,4 @@
-export type VideoSourceType = 'youtube' | 'upload' | 'url';
+export type VideoSourceType = 'youtube' | 'upload' | 'url' | 'aryplus' | 'vimeo' | 'dailymotion' | 'web_embed';
 
 export interface VideoPost {
   id: string;

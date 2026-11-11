@@ -13,13 +13,13 @@ export const INITIAL_SETTINGS: SiteSettings = {
   downloadButtonText: 'DOWNLOAD VIDEO NOW',
   downloadButtonSubtext: 'Ultra Fast Mirror • 1080p 60fps Full HD • Direct Download',
   downloadCountdownSeconds: 3,
-  categories: ['Tech & AI', 'Cinematic 4K', 'Game Trailers', 'Tutorials', 'Music & Beats'],
+  categories: ['Entertainment & Dramas', 'Tech & AI', 'Cinematic 4K', 'Game Trailers', 'Tutorials', 'Music & Beats'],
   topNavLinks: [
     { id: '1', label: 'Home', path: '/' },
     { id: '2', label: 'Trending', path: '/trending' },
-    { id: '3', label: 'Tech & AI', path: '/category/tech-ai' },
-    { id: '4', label: 'Cinematic 4K', path: '/category/cinematic-4k' },
-    { id: '5', label: 'Game Trailers', path: '/category/game-trailers' },
+    { id: '3', label: 'Entertainment & Dramas', path: '/category/entertainment-dramas' },
+    { id: '4', label: 'Tech & AI', path: '/category/tech-ai' },
+    { id: '5', label: 'Cinematic 4K', path: '/category/cinematic-4k' },
   ],
   footerText: '© 2026 StreamPost Media Network. All videos and multimedia assets are curated for high-speed streaming and educational review.',
   supabaseConfig: {
@@ -31,6 +31,37 @@ export const INITIAL_SETTINGS: SiteSettings = {
 };
 
 export const INITIAL_POSTS: VideoPost[] = [
+  {
+    id: 'post-ary-1',
+    title: 'ARY Plus Special Broadcast: Full HD Episode Stream & Direct Mirror',
+    slug: 'ary-plus-special-broadcast-full-hd-episode',
+    excerpt: 'Stream official high-definition television broadcast fetched directly from ARY Plus TV with responsive video player and high-speed mirror download.',
+    content: `## Official ARY Plus TV Broadcast Release
+
+Watch the full high-definition episode stream fetched directly from the ARY Plus TV network. Available for in-page streaming and high-speed mirror download.
+
+### Broadcast Information:
+- **Network**: ARY Digital Network / ARY Plus TV
+- **Format**: 1080p Full HD Web Stream
+- **Source Link**: https://aryplus.tv/video/v2/3/6a6e0b1e9bc4b079859bc14b/6a57868b5bf57c474cc00a50
+
+Use the big orange gradient download button below to secure the high-speed mirror file.`,
+    category: 'Entertainment & Dramas',
+    tags: ['aryplus', 'drama', 'hd', 'broadcast', 'streaming'],
+    videoType: 'aryplus',
+    videoUrl: 'https://aryplus.tv/video/v2/3/6a6e0b1e9bc4b079859bc14b/6a57868b5bf57c474cc00a50',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1578022761797-b8636ac1773c?q=80&w=1200&auto=format&fit=crop',
+    duration: '42:15',
+    fileSize: '750 MB',
+    downloadUrl: 'https://aryplus.tv/video/v2/3/6a6e0b1e9bc4b079859bc14b/6a57868b5bf57c474cc00a50',
+    downloadQuality: ['1080p Full HD', '720p HD', '480p SD'],
+    adsterraEnabled: true,
+    views: 52400,
+    likes: 3890,
+    publishedAt: '2026-04-15',
+    author: 'ARY Plus Network',
+    isFeatured: true,
+  },
   {
     id: 'post-1',
     title: 'Cosmos Odyssey: 4K HDR Deep Space Expedition & Nebula Render',
